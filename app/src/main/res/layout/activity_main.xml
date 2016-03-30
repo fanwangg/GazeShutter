@@ -10,15 +10,32 @@
     tools:context="com.fan.gazeshutter.activity.MainActivity">
 
     <TextView
+        android:id="@+id/txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Gaze Shutter!" />
 
+    <Button
+        android:id="@+id/btnServiceToggle"
+        android:text="service toggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txt"/>
 
+    <Button
+        android:id="@+id/btnZeroMQToggle"
+        android:text="ZMQtoggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnServiceToggle"/>
+
+    <!--
     <com.fan.gazeshutter.utils.CursorLayer
+        android:id="@+id/cursorLayer"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     </com.fan.gazeshutter.utils.CursorLayer>
+    -->
 </RelativeLayout>
 
 

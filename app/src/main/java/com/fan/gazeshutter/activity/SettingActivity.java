@@ -16,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.fan.gazeshutter.MainApplication;
+import com.fan.gazeshutter.R;
 
 import java.util.HashMap;
 import java.util.Iterator;
