@@ -25,7 +25,7 @@ import com.fan.gazeshutter.service.OverlayService;
  */
 
 public class CursorLayer extends View implements  View.OnTouchListener, View.OnGenericMotionListener{
-    static final String TAG = " CursorLayer";
+    static final String TAG = "CursorLayer";
     static final int haloBtnRadius = 100;
     Paint mPaint;
     boolean isGazing = false;
@@ -61,7 +61,7 @@ public class CursorLayer extends View implements  View.OnTouchListener, View.OnG
     public void onDraw(Canvas canvas){
         if(gazePoint!=null) {
             //MainApplication mainApplication = MainApplication.getInstance();
-            canvas.drawCircle(gazePoint.x, gazePoint.y, haloBtnRadius, mPaint);
+            //canvas.drawCircle(gazePoint.x, gazePoint.y, haloBtnRadius, mPaint);
             if (isGazing) {
                 //UP
                 canvas.drawCircle(gazePoint.x, 0, haloBtnRadius, mPaint);
