@@ -24,19 +24,14 @@ import com.fan.gazeshutter.service.OverlayService;
  * Created by fan on 3/24/16.
  */
 
-public class CursorLayer extends View {//implements  View.OnTouchListener, View.OnGenericMotionListener{
+public class HaloButtonLayer extends View {//implements  View.OnTouchListener, View.OnGenericMotionListener{
     static final String TAG = "CursorLayer";
     static final int haloBtnRadius = 100;
     Paint mPaint;
     boolean isGazing = false;
     Point gazePoint = null;
 
-    public CursorLayer(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public CursorLayer(Context context){
+    public HaloButtonLayer(Context context){
         super(context);
         init();
     }

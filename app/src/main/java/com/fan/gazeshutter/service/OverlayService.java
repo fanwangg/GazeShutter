@@ -13,12 +13,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.fan.gazeshutter.R;
-import com.fan.gazeshutter.utils.CursorLayer;
+import com.fan.gazeshutter.utils.HaloButtonLayer;
 
 import java.util.ArrayList;
 
@@ -37,6 +35,8 @@ public class OverlayService extends Service{
 
     private WindowManager mWindowMangager;
     private LayoutInflater mLayoutInflater;
+
+    private View mHaloButtonLayer = new HaloButtonLayer(this);
     ArrayList<View> mButtonLayers;
 
 
@@ -70,6 +70,7 @@ public class OverlayService extends Service{
         mWindowMangager.addView(v, params);
         mButtonLayers.add(v);
 
+
         final ImageView btn = (ImageView) v.findViewById(R.id.btn);
         btn.setOnTouchListener(new View.OnTouchListener() {
                @Override
@@ -95,7 +96,7 @@ public class OverlayService extends Service{
                         initialY = params.y;
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
-                        return true;
+                        return false;
                     case MotionEvent.ACTION_UP: // 放開圖片按鈕時
                         long currentTime = SystemClock.elapsedRealtime();
                         Log.i("currentTime - downTime", currentTime - downTime + "");
@@ -104,7 +105,7 @@ public class OverlayService extends Service{
                         } else {
                             // updateViewLocation(); //黏住邊框功能
                         }
-                        return true;
+                        return false;
                     case MotionEvent.ACTION_MOVE: // 按住移動時
                         params.x = initialX
                                 + (int) (event.getRawX() - initialTouchX);
@@ -112,11 +113,20 @@ public class OverlayService extends Service{
                                 + (int) (event.getRawY() - initialTouchY);
                         Log.d("X,Y",""+params.x+"  "+params.y);
                         mWindowMangager.updateViewLayout(v, params);
-                        return true;
+                        return false;
                 }
                 return false;
             }
         });
+
+        final   WindowManager.LayoutParams params2 = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.RGBA_8888);
+        mWindowMangager.addView(mHaloButtonLayer, params2);
+
 
         if(SHOWING_MARKER){
             ViewGroup mView =  (ViewGroup) mLayoutInflater.inflate(R.layout.overlay, null);

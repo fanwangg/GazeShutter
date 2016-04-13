@@ -15,19 +15,41 @@
         android:layout_height="wrap_content"
         android:text="Gaze Shutter!" />
 
+    <TextView
+        android:id="@+id/txtDeviceIP"
+        tools:text="0.0.0.0"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txt"/>
+
     <Button
         android:id="@+id/btnServiceToggle"
         android:text="service toggle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/txt"/>
+        android:layout_below="@+id/txtDeviceIP"/>
 
     <Button
-        android:id="@+id/btnZeroMQToggle"
-        android:text="ZMQtoggle"
+        android:id="@+id/btnZMQRecv"
+        android:text="ZMQ start recv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/btnServiceToggle"/>
+
+    <EditText
+        android:id="@+id/txtServerIP"
+        android:layout_width="match_parent"
+        tools:text="0.0.0.0"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnZMQRecv"/>
+
+    <Button
+        android:id="@+id/btnZMQSend"
+        android:text="ZMQ start send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/txtServerIP"/>
+
 
     <!--
     <com.fan.gazeshutter.utils.CursorLayer
