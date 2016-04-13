@@ -39,8 +39,9 @@
     <EditText
         android:id="@+id/txtServerIP"
         android:layout_width="match_parent"
-        tools:text="0.0.0.0"
         android:layout_height="wrap_content"
+        tools:text="0.0.0.0"
+        android:text="192.168.1.1"
         android:layout_below="@+id/btnZMQRecv"/>
 
     <Button

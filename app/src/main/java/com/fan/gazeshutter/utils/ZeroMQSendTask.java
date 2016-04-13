@@ -25,7 +25,6 @@ public class ZeroMQSendTask extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... params) {
         ZMQ.Context context = ZMQ.context(1);
-
         ZMQ.Socket publisher = context.socket(ZMQ.PUB);
         publisher.bind("tcp://*:"+SERVER_PORT);
 
@@ -38,7 +37,6 @@ public class ZeroMQSendTask extends AsyncTask<String, Void, Void> {
 
         publisher.close();
         context.term();
-
         return null;
     }
 }
