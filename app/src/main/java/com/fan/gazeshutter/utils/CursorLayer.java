@@ -24,7 +24,7 @@ import com.fan.gazeshutter.service.OverlayService;
  * Created by fan on 3/24/16.
  */
 
-public class CursorLayer extends View implements  View.OnTouchListener, View.OnGenericMotionListener{
+public class CursorLayer extends View {//implements  View.OnTouchListener, View.OnGenericMotionListener{
     static final String TAG = "CursorLayer";
     static final int haloBtnRadius = 100;
     Paint mPaint;
@@ -43,13 +43,13 @@ public class CursorLayer extends View implements  View.OnTouchListener, View.OnG
 
     protected void init(){
         //listener
-        setOnTouchListener(this);
-        setOnGenericMotionListener(this);
+        //setOnTouchListener(this);
+        //setOnGenericMotionListener(this);
 
-        setImportantForAccessibility( IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+        //setImportantForAccessibility( IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
 
         //drawing
-        //setBackgroundColor(0x88ff0000);
+        setBackgroundColor(0x88ff0000);
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setStyle(Paint.Style.FILL);
@@ -75,6 +75,7 @@ public class CursorLayer extends View implements  View.OnTouchListener, View.OnG
         }
     }
 
+    /*
     @Override
     public boolean onGenericMotion(View v, MotionEvent event) {
         if(event.getToolType(0)!=MotionEvent.TOOL_TYPE_MOUSE && event.getToolType(0)!=MotionEvent.TOOL_TYPE_FINGER)
@@ -113,13 +114,17 @@ public class CursorLayer extends View implements  View.OnTouchListener, View.OnG
     public boolean dispatchTouchEvent(MotionEvent event) {
         this.onGenericMotion(this, event);
         //this.onTouch(this, event);
-        return false;//super.dispatchTouchEvent(event);
+        return super.dispatchTouchEvent(event);
     }
+
+
+
     @Override
     public boolean onTouch(View view, MotionEvent event) {
         Log.d(TAG,"TouchMotion x="+event.getX()+" y="+event.getY());
-        return false;//super.onTouchEvent(event);
+        return super.onTouchEvent(event);
     }
+    */
 
     public boolean getGazeState(){
         return isGazing;
