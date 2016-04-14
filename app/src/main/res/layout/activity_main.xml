@@ -51,6 +51,21 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/txtServerIP"/>
 
+    <SeekBar
+        android:id="@+id/seekBarX"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btnZMQSend"
+        android:max="10"/>
+
+    <SeekBar
+        android:id="@+id/seekBarY"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/seekBarX"
+        android:max="10"/>
+
+
 
     <!--
     <com.fan.gazeshutter.utils.CursorLayer

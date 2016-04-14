@@ -10,7 +10,6 @@ public class MainApplication extends Application {
     public int mScreenWidth;
     public int mScreenHeight;
 
-
     public MainApplication(){
     }
 
@@ -20,4 +19,5 @@ public class MainApplication extends Application {
         }
         return mInstance;
     }
+
 }

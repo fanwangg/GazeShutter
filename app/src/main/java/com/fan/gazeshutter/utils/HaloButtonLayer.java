@@ -31,8 +31,14 @@ public class HaloButtonLayer extends View {//implements  View.OnTouchListener, V
     boolean isGazing = false;
     Point gazePoint = null;
 
+
     public HaloButtonLayer(Context context){
         super(context);
+        init();
+    }
+
+    public HaloButtonLayer(Context context, AttributeSet attrs){
+        super(context,attrs);
         init();
     }
 

@@ -17,6 +17,7 @@ import android.widget.ImageView;
 
 import com.fan.gazeshutter.R;
 import com.fan.gazeshutter.utils.HaloButtonLayer;
+import com.fan.gazeshutter.utils.NetworkUtils;
 
 import java.util.ArrayList;
 
@@ -33,10 +34,10 @@ public class OverlayService extends Service{
     static final boolean SHOWING_MARKER = false;
     static final String TAG = "OverlayService";
 
-    private WindowManager mWindowMangager;
-    private LayoutInflater mLayoutInflater;
+    WindowManager mWindowMangager;
+    LayoutInflater mLayoutInflater;
 
-    private View mHaloButtonLayer = new HaloButtonLayer(this);
+    //private View mHaloButtonLayer = new HaloButtonLayer(this);
     ArrayList<View> mButtonLayers;
 
 
@@ -44,6 +45,14 @@ public class OverlayService extends Service{
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId){
+        ZeroMQReceiveTask zmqTask = new ZeroMQReceiveTask(this);
+        zmqTask.execute(NetworkUtils.getServerIP());
+        Log.d(TAG,"onStartCommand");
+        return START_STICKY;
     }
 
     @Override
@@ -118,7 +127,7 @@ public class OverlayService extends Service{
                 return false;
             }
         });
-
+/*
         final   WindowManager.LayoutParams params2 = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
@@ -126,7 +135,7 @@ public class OverlayService extends Service{
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.RGBA_8888);
         mWindowMangager.addView(mHaloButtonLayer, params2);
-
+*/
 
         if(SHOWING_MARKER){
             ViewGroup mView =  (ViewGroup) mLayoutInflater.inflate(R.layout.overlay, null);

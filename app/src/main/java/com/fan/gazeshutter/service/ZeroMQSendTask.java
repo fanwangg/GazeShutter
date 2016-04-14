@@ -1,7 +1,11 @@
-package com.fan.gazeshutter.utils;
+package com.fan.gazeshutter.service;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import com.fan.gazeshutter.activity.MainActivity;
+import com.fan.gazeshutter.utils.NetworkUtils;
 
 import org.zeromq.ZMQ;
 
@@ -17,9 +21,12 @@ public class ZeroMQSendTask extends AsyncTask<String, Void, Void> {
     static final String SUB_DT    = "dt";
     static final String SUB_GAZE  = "gaze_positions";
     static final String SUB_PUPIL = "pupil_positions";
+    static final String SUB_GAZE_ON_SURFACE = "realtime gaze on unnamed"; //[TODO] tend to be changed
 
+    Context mContext;
 
-    public ZeroMQSendTask(){
+    public ZeroMQSendTask(Context context){
+        mContext = context;
     }
 
     @Override
@@ -29,10 +36,11 @@ public class ZeroMQSendTask extends AsyncTask<String, Void, Void> {
         publisher.bind("tcp://*:"+SERVER_PORT);
 
         while (!Thread.currentThread ().isInterrupted ()) {
-            publisher.sendMore ("A");
-            publisher.send ("We don't want to see this");
-            publisher.sendMore ("B");
-            publisher.send("We would like to see this");
+            publisher.sendMore (SUB_GAZE_ON_SURFACE);
+            double x = ((MainActivity)mContext).globalX;
+            double y = ((MainActivity)mContext).globalY;
+
+            publisher.send ("("+x+","+y+")");
         }
 
         publisher.close();

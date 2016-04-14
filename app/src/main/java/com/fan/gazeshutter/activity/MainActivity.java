@@ -12,17 +12,20 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Display;
 import android.widget.EditText;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
 import com.fan.gazeshutter.service.OverlayService;
+import com.fan.gazeshutter.utils.DispUtils;
 import com.fan.gazeshutter.utils.NetworkUtils;
-import com.fan.gazeshutter.utils.ZeroMQReceiveTask;
-import com.fan.gazeshutter.utils.ZeroMQSendTask;
+import com.fan.gazeshutter.service.ZeroMQReceiveTask;
+import com.fan.gazeshutter.service.ZeroMQSendTask;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,12 +33,18 @@ import java.util.Iterator;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnTextChanged;
 
 
 public class MainActivity extends AppCompatActivity {
     @Bind(R.id.txtDeviceIP) TextView mTxtDeviceIP;
     @Bind(R.id.txtServerIP) EditText mTxtServerIP;
+    @Bind(R.id.seekBarX)    SeekBar mSeekBarX;
+    @Bind(R.id.seekBarY)    SeekBar mSeekBarY;
 
+
+    public static double globalX, globalY;
+    static double GLOBAL_MAX = 10;
     private static final String TAG = "MainActivity";
     private static final String ACTION_USB_PERMISSION = "com.fan.gazeshutter.activity.USB_PERMISSION";
     private static final int REQUEST_CODE = 5566;
@@ -55,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        //this.bindService();
         //getWindow().getDecorView().getRootView().setOnGenericMotionListener(this);
         init();
     }
@@ -76,8 +86,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG,"x:"+size.x+" y:"+size.y);
     }
 
-
     protected void init(){
+        DispUtils.init(this);
         initScreenSize();
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         mUsbReceiver = new BroadcastReceiver() {
@@ -137,6 +147,41 @@ public class MainActivity extends AppCompatActivity {
 
         //network
         mTxtDeviceIP.setText(NetworkUtils.getLocalIpAddress(this));
+
+        mSeekBarX.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                globalX = (double)progress/GLOBAL_MAX;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mSeekBarY.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                globalY = (double)progress/GLOBAL_MAX;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
     }
 
 
@@ -184,19 +229,24 @@ public class MainActivity extends AppCompatActivity {
             toggleService();
         }
     }
-
+/*
     @OnClick(R.id.btnZMQRecv)
     public void startZmqRecv() {
-        ZeroMQReceiveTask zmqTask = new ZeroMQReceiveTask();
-        zmqTask.execute(mTxtServerIP.getText().toString());
+    }
+*/
+
+
+
+    @OnTextChanged(R.id.txtServerIP)
+    public void updateServerIP(CharSequence text){
+        NetworkUtils.setServerIP(text.toString());
     }
 
     @OnClick(R.id.btnZMQSend)
     public void startZmqSend() {
-        ZeroMQSendTask zmqTask = new ZeroMQSendTask();
+        ZeroMQSendTask zmqTask = new ZeroMQSendTask(this);
         zmqTask.execute();
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
@@ -217,8 +267,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void drawHaloButtons(int x, int y){
 
-
         return;
+    }
+
+    public void drawGazePoint(int x, int y){
+
+
+
     }
 }
 
