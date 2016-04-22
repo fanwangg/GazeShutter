@@ -1,6 +1,5 @@
 package com.fan.gazeshutter.service;
 
-import android.app.Service;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.AsyncTask;
@@ -11,8 +10,6 @@ import android.view.WindowManager;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
-import com.fan.gazeshutter.service.OverlayService;
-import com.fan.gazeshutter.utils.DispUtils;
 import com.fan.gazeshutter.utils.NetworkUtils;
 
 import org.zeromq.ZMQ;
@@ -21,7 +18,7 @@ import org.zeromq.ZMQ;
  * ref. https://www.novoda.com/blog/minimal-zeromq-client-server/
  */
 
-public class ZeroMQReceiveTask extends AsyncTask<String, Point, String> {
+public class ZeroMQReceiveTask extends AsyncTask<String, Double, String> {
     static final String TAG = "ZeroMQReceiveTask";
     static final String SERVER_IP = "192.168.0.117";
     static final String SERVER_PORT = NetworkUtils.PORT;
@@ -44,7 +41,6 @@ public class ZeroMQReceiveTask extends AsyncTask<String, Point, String> {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
         mParams.gravity = Gravity.LEFT | Gravity.TOP;
-        mService.mWindowMangager.addView(mView,mParams);
     }
 
     @Override
@@ -56,12 +52,13 @@ public class ZeroMQReceiveTask extends AsyncTask<String, Point, String> {
         socket.connect("tcp://"+params[0]+":"+SERVER_PORT);
         socket.subscribe("".getBytes(ZMQ.CHARSET));
 
-        while (!Thread.currentThread ().isInterrupted ()) {
+        //while (!Thread.currentThread ().isInterrupted ()) {
+        while (!isCancelled()) {
             String address  = socket.recvStr ();
             String contents = socket.recvStr();
 
-            Point p = parseMessageToPoint(contents);
-            publishProgress(p);
+            Double[] xy = parseMessageToRatio(contents);
+            publishProgress(xy);
             //Log.d(TAG,address + " : " + contents);
         }
 
@@ -73,30 +70,46 @@ public class ZeroMQReceiveTask extends AsyncTask<String, Point, String> {
     }
 
     @Override
-    protected void onProgressUpdate(Point... point){
-        mParams.x = point[0].x;//DispUtils.dp2px(point[0].x);
-        mParams.y = point[0].y;
-        mService.mWindowMangager.updateViewLayout(mView, mParams);
-
+    protected void onProgressUpdate(Double... xy){
+        if(0<=xy[0] && xy[0]<=1 && 0<=xy[1] && xy[1]<=1) {
+            if(!mView.isShown()) {
+                mService.mWindowManager.addView(mView, mParams);
+            }
+            MainApplication mainApplication = MainApplication.getInstance();
+            mParams.x = (int)(xy[0]*mainApplication.mScreenWidth);
+            mParams.y = (int)((1-xy[1])*mainApplication.mScreenHeight);
+            mService.mWindowManager.updateViewLayout(mView, mParams);
+        }
+        else{
+            if(mView.isShown()) {
+                mService.mWindowManager.removeViewImmediate(mView);
+            }
+            Log.d(TAG, "onProgressUpdate: gaze out of screen");
+        }
     }
 
     @Override
     protected void onPostExecute(String result) {
         Log.d(TAG,"result:"+result);
-        //uiThreadHandler.sendMessage(Util.bundledMessage(uiThreadHandler, result));
+
     }
 
-    protected Point parseMessageToPoint(String content){
-        MainApplication mainApplication = MainApplication.getInstance();
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+        Log.d(TAG,"onCanceled");
+        mService.mWindowManager.removeView(mView);
+    }
+
+    protected Double[] parseMessageToRatio(String content){
         content = content.substring(1,content.length()-1);
+        Log.d(TAG,content);
 
         String[] xy = content.split(",");//[TODO] split w/ regex
-        Log.d(TAG,content);
-        int x = (int)(Double.valueOf(xy[0])*mainApplication.mScreenWidth);
-        int y = (int)(Double.valueOf(xy[1])*mainApplication.mScreenHeight);
+        Double x = Double.valueOf(xy[0]);
+        Double y = Double.valueOf(xy[1]);
         //Log.d(TAG,"x:"+x+"  y:"+y);
-        return new Point(x,y);
+
+        return new Double[]{x,y};
     }
-
-
 }

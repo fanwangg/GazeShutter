@@ -34,7 +34,8 @@ public class OverlayService extends Service{
     static final boolean SHOWING_MARKER = false;
     static final String TAG = "OverlayService";
 
-    WindowManager mWindowMangager;
+    ZeroMQReceiveTask mZMQRecvTask;
+    WindowManager mWindowManager;
     LayoutInflater mLayoutInflater;
 
     //private View mHaloButtonLayer = new HaloButtonLayer(this);
@@ -49,8 +50,8 @@ public class OverlayService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-        ZeroMQReceiveTask zmqTask = new ZeroMQReceiveTask(this);
-        zmqTask.execute(NetworkUtils.getServerIP());
+        mZMQRecvTask = new ZeroMQReceiveTask(this);
+        mZMQRecvTask.execute(NetworkUtils.getServerIP());
         Log.d(TAG,"onStartCommand");
         return START_STICKY;
     }
@@ -59,7 +60,7 @@ public class OverlayService extends Service{
     public void onCreate() {
         super.onCreate();
         mButtonLayers = new ArrayList<View>();
-        mWindowMangager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mLayoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 
@@ -76,7 +77,7 @@ public class OverlayService extends Service{
                 PixelFormat.RGBA_8888);
         params.gravity = Gravity.LEFT | Gravity.TOP;
         View v = mLayoutInflater.inflate(R.layout.overlay, null);
-        mWindowMangager.addView(v, params);
+        mWindowManager.addView(v, params);
         mButtonLayers.add(v);
 
 
@@ -98,7 +99,7 @@ public class OverlayService extends Service{
 
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN: // 按下圖片按鈕尚未放開時
+                    case MotionEvent.ACTION_DOWN:
                         Log.i("downTime", downTime + "");
                         downTime = SystemClock.elapsedRealtime();
                         initialX = params.x;
@@ -106,7 +107,7 @@ public class OverlayService extends Service{
                         initialTouchX = event.getRawX();
                         initialTouchY = event.getRawY();
                         return false;
-                    case MotionEvent.ACTION_UP: // 放開圖片按鈕時
+                    case MotionEvent.ACTION_UP:
                         long currentTime = SystemClock.elapsedRealtime();
                         Log.i("currentTime - downTime", currentTime - downTime + "");
                         if (currentTime - downTime < 200) { // 當按下圖片按鈕時
@@ -115,13 +116,13 @@ public class OverlayService extends Service{
                             // updateViewLocation(); //黏住邊框功能
                         }
                         return false;
-                    case MotionEvent.ACTION_MOVE: // 按住移動時
+                    case MotionEvent.ACTION_MOVE:
                         params.x = initialX
                                 + (int) (event.getRawX() - initialTouchX);
                         params.y = initialY
                                 + (int) (event.getRawY() - initialTouchY);
                         Log.d("X,Y",""+params.x+"  "+params.y);
-                        mWindowMangager.updateViewLayout(v, params);
+                        mWindowManager.updateViewLayout(v, params);
                         return false;
                 }
                 return false;
@@ -134,21 +135,22 @@ public class OverlayService extends Service{
                 WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.RGBA_8888);
-        mWindowMangager.addView(mHaloButtonLayer, params2);
+        mWindowManager.addView(mHaloButtonLayer, params2);
 */
 
         if(SHOWING_MARKER){
             ViewGroup mView =  (ViewGroup) mLayoutInflater.inflate(R.layout.overlay, null);
-            mWindowMangager.addView(mView, params);
+            mWindowManager.addView(mView, params);
         }
     }
+
 
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         for(View btnLayer:mButtonLayers){
-            mWindowMangager.removeView(btnLayer);
+            mWindowManager.removeView(btnLayer);
         }
         mButtonLayers = new ArrayList<View>();
     }

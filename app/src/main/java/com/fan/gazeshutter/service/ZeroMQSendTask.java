@@ -24,7 +24,6 @@ public class ZeroMQSendTask extends AsyncTask<String, Void, Void> {
     static final String SUB_GAZE_ON_SURFACE = "realtime gaze on unnamed"; //[TODO] tend to be changed
 
     Context mContext;
-
     public ZeroMQSendTask(Context context){
         mContext = context;
     }

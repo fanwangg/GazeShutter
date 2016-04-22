@@ -24,6 +24,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".activity.PilotStudyActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar" >
+        </activity>
+
         <service android:name=".service.OverlayService"></service>
 
     </application>

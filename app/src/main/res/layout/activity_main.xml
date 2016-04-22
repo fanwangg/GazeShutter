@@ -65,6 +65,13 @@
         android:layout_below="@+id/seekBarX"
         android:max="10"/>
 
+    <Button
+        android:id="@+id/btnPilot"
+        android:text="start pilot study"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/seekBarY"/>
+
 
 
     <!--

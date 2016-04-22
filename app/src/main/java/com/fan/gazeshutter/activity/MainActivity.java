@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     UsbManager mUsbManager;
     IntentFilter filterAttached_and_Detached;
     BroadcastReceiver mUsbReceiver;
+    ZeroMQSendTask mZMQSendTask;
 
     boolean isGazing = false;
     Point gazePoint = null;
@@ -229,13 +230,6 @@ public class MainActivity extends AppCompatActivity {
             toggleService();
         }
     }
-/*
-    @OnClick(R.id.btnZMQRecv)
-    public void startZmqRecv() {
-    }
-*/
-
-
 
     @OnTextChanged(R.id.txtServerIP)
     public void updateServerIP(CharSequence text){
@@ -244,8 +238,15 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.btnZMQSend)
     public void startZmqSend() {
-        ZeroMQSendTask zmqTask = new ZeroMQSendTask(this);
-        zmqTask.execute();
+        mZMQSendTask= new ZeroMQSendTask(this);
+        mZMQSendTask.execute();
+    }
+
+    @OnClick(R.id.btnPilot)
+    public void startPilotStudy(){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, PilotStudyActivity.class);
+        startActivity(intent);
     }
 
     @Override
@@ -260,7 +261,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleService() {
         Intent intent=new Intent(this, OverlayService.class);
-        if (!stopService(intent)) {
+        if (stopService(intent)) {
+            if (mZMQSendTask != null)
+                mZMQSendTask.cancel(true);
+        }
+        else {
             startService(intent);
         }
     }
