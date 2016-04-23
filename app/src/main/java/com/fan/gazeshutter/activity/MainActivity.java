@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Display;
 import android.widget.EditText;
