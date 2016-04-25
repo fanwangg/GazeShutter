@@ -18,8 +18,8 @@ import org.zeromq.ZMQ;
  * ref. https://www.novoda.com/blog/minimal-zeromq-client-server/
  */
 
-public class ZeroMQReceiveTask extends AsyncTask<String, Double, String> {
-    static final String TAG = "ZeroMQReceiveTask";
+public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
+    static final String TAG = "ZMQReceiveTask";
     static final String SERVER_IP = "192.168.0.117";
     static final String SERVER_PORT = NetworkUtils.PORT;
 
@@ -31,7 +31,7 @@ public class ZeroMQReceiveTask extends AsyncTask<String, Double, String> {
     View mView;
     OverlayService mService;
     WindowManager.LayoutParams mParams;
-    public ZeroMQReceiveTask(OverlayService service){
+    public ZMQReceiveTask(OverlayService service){
         mService = service;
         mView = mService.mLayoutInflater.inflate(R.layout.overlay, null);
         mParams = new WindowManager.LayoutParams(
@@ -59,7 +59,7 @@ public class ZeroMQReceiveTask extends AsyncTask<String, Double, String> {
 
             Double[] xy = parseMessageToRatio(contents);
             publishProgress(xy);
-            //Log.d(TAG,address + " : " + contents);
+            Log.d(TAG,address + " : " + contents);
         }
 
         String result = new String(socket.recv(0));

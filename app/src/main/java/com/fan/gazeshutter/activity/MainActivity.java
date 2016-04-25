@@ -23,7 +23,6 @@ import com.fan.gazeshutter.R;
 import com.fan.gazeshutter.service.OverlayService;
 import com.fan.gazeshutter.utils.DispUtils;
 import com.fan.gazeshutter.utils.NetworkUtils;
-import com.fan.gazeshutter.service.ZeroMQReceiveTask;
 import com.fan.gazeshutter.service.ZeroMQSendTask;
 
 import java.util.HashMap;
@@ -38,8 +37,6 @@ import butterknife.OnTextChanged;
 public class MainActivity extends AppCompatActivity {
     @Bind(R.id.txtDeviceIP) TextView mTxtDeviceIP;
     @Bind(R.id.txtServerIP) EditText mTxtServerIP;
-    @Bind(R.id.seekBarX)    SeekBar mSeekBarX;
-    @Bind(R.id.seekBarY)    SeekBar mSeekBarY;
 
 
     public static double globalX, globalY;
@@ -50,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
     UsbManager mUsbManager;
     IntentFilter filterAttached_and_Detached;
     BroadcastReceiver mUsbReceiver;
-    ZeroMQSendTask mZMQSendTask;
 
     boolean isGazing = false;
     Point gazePoint = null;
@@ -147,41 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
         //network
         mTxtDeviceIP.setText(NetworkUtils.getLocalIpAddress(this));
-
-        mSeekBarX.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                globalX = (double)progress/GLOBAL_MAX;
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        mSeekBarY.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                globalY = (double)progress/GLOBAL_MAX;
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
     }
 
 
@@ -237,8 +198,9 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.btnZMQSend)
     public void startZmqSend() {
-        mZMQSendTask= new ZeroMQSendTask(this);
-        mZMQSendTask.execute();
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, ZMQSendingActivity.class);
+        startActivity(intent);
     }
 
     @OnClick(R.id.btnPilot)
@@ -260,11 +222,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void toggleService() {
         Intent intent=new Intent(this, OverlayService.class);
-        if (stopService(intent)) {
-            if (mZMQSendTask != null)
-                mZMQSendTask.cancel(true);
-        }
-        else {
+        if (!stopService(intent)) {
             startService(intent);
         }
     }
@@ -275,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void drawGazePoint(int x, int y){
-
 
 
     }

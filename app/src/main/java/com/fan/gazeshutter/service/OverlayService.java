@@ -16,7 +16,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.fan.gazeshutter.R;
-import com.fan.gazeshutter.utils.HaloButtonLayer;
 import com.fan.gazeshutter.utils.NetworkUtils;
 
 import java.util.ArrayList;
@@ -34,9 +33,10 @@ public class OverlayService extends Service{
     static final boolean SHOWING_MARKER = false;
     static final String TAG = "OverlayService";
 
-    ZeroMQReceiveTask mZMQRecvTask;
+    ZMQReceiveTask mZMQRecvTask;
     WindowManager mWindowManager;
     LayoutInflater mLayoutInflater;
+    View mCurrentView;
 
     //private View mHaloButtonLayer = new HaloButtonLayer(this);
     ArrayList<View> mButtonLayers;
@@ -50,7 +50,7 @@ public class OverlayService extends Service{
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId){
-        mZMQRecvTask = new ZeroMQReceiveTask(this);
+        mZMQRecvTask = new ZMQReceiveTask(this);
         mZMQRecvTask.execute(NetworkUtils.getServerIP());
         Log.d(TAG,"onStartCommand");
         return START_STICKY;
@@ -144,8 +144,6 @@ public class OverlayService extends Service{
         }
     }
 
-
-
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -153,5 +151,12 @@ public class OverlayService extends Service{
             mWindowManager.removeView(btnLayer);
         }
         mButtonLayers = new ArrayList<View>();
+    }
+
+
+    public void stimulateTouchEvent(int x, int y){
+        mCurrentView.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, x, y, 0));
+        mCurrentView.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, x, y, 0));
+        return;
     }
 }
