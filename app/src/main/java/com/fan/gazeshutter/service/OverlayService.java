@@ -20,6 +20,8 @@ import com.fan.gazeshutter.utils.NetworkUtils;
 
 import java.util.ArrayList;
 
+import butterknife.Bind;
+
 /**
  * Created by fan on 3/27/16.
  * ref. http://www.whycouch.com/2013/01/how-to-overlay-view-over-everything-on.html

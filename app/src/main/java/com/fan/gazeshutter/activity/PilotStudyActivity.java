@@ -1,19 +1,21 @@
 package com.fan.gazeshutter.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fan.gazeshutter.R;
-import com.fan.gazeshutter.service.OverlayService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,20 +25,35 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Created by fan on 4/18/16.
  */
 public class PilotStudyActivity extends Activity {
-    final int TARGET_ROW_NUM = 4;
-    final int TARGET_COL_NUM = 4;
-    WindowManager mWindowManager;
+    static final String TAG = "PilotStudyActivity";
+    @Bind(R.id.txtTrailId) TextView mTxtViewTrailId;
+    static int mCanvasWidth, mCanvasHeight;
+    final int TARGET_ROWS = 4;
+    final int TARGET_COLS = 4;
+    final int TRAIL_PER_TARGET = 3;
 
-    ViewGroup mLayout;
-    ImageView[][] mTargetView = new ImageView[4][4];
-    int mPrevID;
+
+    int mTrailNum = 0;
+    Trail mCurrentTrail;
+    ArrayList<Integer> mTrailTargets = new ArrayList<Integer>();
+
+
+
+    boolean mInit = false;
+
+    GridLayout mLayout;
+    ImageView[][] mTargetViews = new ImageView[4][4];
+    ImageView mPrevTargetView, mCurrentTargetView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,26 +64,48 @@ public class PilotStudyActivity extends Activity {
         init();
     }
 
-    void init(){
-        mLayout =  (ViewGroup)this.getWindow().getDecorView().getRootView();
-        mWindowManager = (WindowManager)getSystemService(WINDOW_SERVICE);
+    void init() {
+        mLayout = (GridLayout)findViewById(R.id.layout_pilotstudy);
+        mLayout.setColumnCount(TARGET_COLS);
+        mLayout.setRowCount(TARGET_ROWS);
+        mLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                mCanvasWidth = mLayout.getWidth()-mLayout.getPaddingLeft()-mLayout.getPaddingRight();
+                mCanvasHeight = mLayout.getHeight()-mLayout.getPaddingTop()-mLayout.getPaddingBottom();
 
-        Intent intent = new Intent(this, OverlayService.class);
-        for(int r = 0; r< TARGET_ROW_NUM; r++){
-            for(int c = 0; c< TARGET_COL_NUM; c++){
-                mTargetView[r][c] = new ImageView(this);
-                mTargetView[r][c].setImageResource(R.drawable.cross);
-                GridLayout.Spec rowSpec = GridLayout.spec(r);
-                GridLayout.Spec colSpec = GridLayout.spec(c);
-                GridLayout.LayoutParams params = new GridLayout.LayoutParams(rowSpec,colSpec);
-                params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                for (int r = 0; r < TARGET_ROWS; r++) {
+                    for (int c = 0; c < TARGET_COLS; c++) {
+                        mTargetViews[r][c] = new ImageView(PilotStudyActivity.this);
+                        mTargetViews[r][c].setImageResource(R.drawable.cross);
 
-                mLayout.addView(mTargetView[r][c], params);
-                mTargetView[r][c].setVisibility(View.INVISIBLE);
+                        GridLayout.Spec rowSpec = GridLayout.spec(r);
+                        GridLayout.Spec colSpec = GridLayout.spec(c);
+                        GridLayout.LayoutParams params = new GridLayout.LayoutParams(rowSpec, colSpec);
+
+                        params.width = mCanvasWidth / TARGET_COLS;
+                        params.height = mCanvasHeight / TARGET_ROWS;
+                        params.setGravity(Gravity.CENTER);
+                        mLayout.addView(mTargetViews[r][c], params);
+                        mTargetViews[r][c].setVisibility(View.INVISIBLE);
+                    }
+                }
+                nextTrail();
+            }
+        });
+
+        //init trail targets
+        for (int r = 0; r < TARGET_ROWS; r++) {
+            for (int c = 0; c < TARGET_COLS; c++) {
+                for (int t = 0; t < TRAIL_PER_TARGET; t++) {
+                    mTrailTargets.add(r* TARGET_COLS +c);
+                }
             }
         }
+        Collections.shuffle(mTrailTargets);
     }
+
+
 
     private ServiceConnection conn = new ServiceConnection() {
         @Override
@@ -82,6 +121,47 @@ public class PilotStudyActivity extends Activity {
 
     };
 
+    public void showCurrentTargetView() {
+        if(mPrevTargetView!=null) {
+            mPrevTargetView.setVisibility(View.INVISIBLE);
+        }
+        if(mCurrentTargetView!=null) {
+            mCurrentTargetView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @OnClick(R.id.layout_right)
+    public void nextTrail(){
+        if(mTrailNum > TARGET_ROWS * TARGET_COLS * TRAIL_PER_TARGET){
+            return;
+        } else if(mTrailNum == TARGET_ROWS * TARGET_COLS * TRAIL_PER_TARGET){
+            showFinishDialog();
+            mCurrentTrail.finishAndOutput();
+            return;
+        }
+
+        mPrevTargetView = mCurrentTargetView;
+        mCurrentTrail = new Trail(mTrailNum, mTrailTargets.get(mTrailNum));
+        mCurrentTargetView = mTargetViews[mCurrentTrail.getRow()][mCurrentTrail.getCol()];
+        showCurrentTargetView();
+        mTxtViewTrailId.setText("Trail #"+mTrailNum);
+        mTrailNum++;
+    }
+
+    public void showFinishDialog(){
+        new AlertDialog.Builder(PilotStudyActivity.this)
+                .setTitle(R.string.finish_pilot_study_title)
+                .setMessage(R.string.finish_pilot_study_msg)
+                .setPositiveButton(R.string.finish_pilot_study_confirm, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //[TODO] thread to ouptut
+                        finish();
+                    }
+                })
+                .setCancelable(false)
+                .show();
+    }
 
     class Trail{
         static final String USER_KEY = "userID";
@@ -97,11 +177,10 @@ public class PilotStudyActivity extends Activity {
         STAGE curStage;
         ArrayList<GazePoint> path;
 
-        Trail(int user, int trail, int target){
+        Trail(int trailID, int target){
             this.startTime = System.currentTimeMillis();
-            this.userID = user;
-            this.trailID = trail;
 
+            this.trailID = trailID;
             this.target = target;
             this.row = getRow();
             this.col = getCol();
@@ -110,7 +189,7 @@ public class PilotStudyActivity extends Activity {
             this.curStage = STAGE.STAGE_0;
         }
 
-        public void output(){
+        public void finishAndOutput(){
             try {
                 JSONObject json = new JSONObject();
                 json.put(USER_KEY,  userID);
@@ -162,11 +241,11 @@ public class PilotStudyActivity extends Activity {
         */
 
         int getRow(){
-            return this.target/TARGET_COL_NUM;
+            return this.target/ TARGET_COLS;
         }
 
         int getCol(){
-            return target%TARGET_COL_NUM;
+            return target% TARGET_COLS;
         }
 
         void updateDuration(int elapsedTime){
@@ -179,6 +258,7 @@ public class PilotStudyActivity extends Activity {
             return path.get(path.size()-1).t;
         }
     }
+
 
     enum STAGE {
         STAGE_0, STAGE_1, STAGE_2, STAGE_3;

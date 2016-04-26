@@ -71,6 +71,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
 
     @Override
     protected void onProgressUpdate(Double... xy){
+        Log.d(TAG, "onProgressUpdate:"+xy[0]+" "+xy[1]);
         if(0<=xy[0] && xy[0]<=1 && 0<=xy[1] && xy[1]<=1) {
             if(!mView.isShown()) {
                 mService.mWindowManager.addView(mView, mParams);
@@ -84,7 +85,6 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
             if(mView.isShown()) {
                 mService.mWindowManager.removeViewImmediate(mView);
             }
-            Log.d(TAG, "onProgressUpdate: gaze out of screen");
         }
     }
 

@@ -1,157 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.fan.gazeshutter.activity.PilotStudyActivity"
-    android:rowCount="4"
-    android:columnCount="4"
-    android:useDefaultMargins="false"
-    android:layout_gravity="">
+    android:layout_height="match_parent">
+
+    <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/layout_pilotstudy"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="com.fan.gazeshutter.activity.PilotStudyActivity"
+        android:alignmentMode="alignMargins"
+        >
+    </GridLayout>
 
 
-    <!-- Row 0 -->
-    <ImageView
-        android:id="@+id/btn_0_0"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="0"
-        android:layout_row="0"
-        android:layout_columnWeight="1" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+        <View
+            android:id="@+id/layout_left"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"/>
 
-    <ImageView
-        android:id="@+id/btn_0_1"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="1"
-        android:layout_row="0"
-        android:layout_columnWeight="1" />
+        <View
+            android:id="@+id/layout_right"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
 
-    <ImageView
-        android:id="@+id/btn_0_2"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="2"
-        android:layout_row="0"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_0_3"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="3"
-        android:layout_row="0"
-        android:layout_columnWeight="1" />
-
-
-
-
-    <!-- Row 1 -->
-    <ImageView
-        android:id="@+id/btn_1_0"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="0"
-        android:layout_row="1"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_1_1"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="1"
-        android:layout_row="1"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_1_2"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="2"
-        android:layout_row="1"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_1_3"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="3"
-        android:layout_row="1"
-        android:layout_columnWeight="1" />
-
-
-
-    <!-- Row 2 -->
-    <ImageView
-        android:id="@+id/btn_2_0"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="0"
-        android:layout_row="2"
-        android:layout_columnWeight="1"
-        android:layout_width="wrap_content" />
-
-    <ImageView
-        android:id="@+id/btn_2_1"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="1"
-        android:layout_row="2"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_2_2"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="2"
-        android:layout_row="2"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_2_3"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="3"
-        android:layout_row="2"
-        android:layout_columnWeight="1" />
-
-    <!-- Row 4 -->
-    <ImageView
-        android:id="@+id/btn_3_0"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="0"
-        android:layout_row="3"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_3_1"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="1"
-        android:layout_row="3"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_3_2"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="2"
-        android:layout_row="3"
-        android:layout_columnWeight="1" />
-
-    <ImageView
-        android:id="@+id/btn_3_3"
-        android:background="@drawable/cross"
-        android:layout_rowWeight="1"
-        android:layout_column="3"
-        android:layout_row="3"
-        android:layout_columnWeight="1" />
-
-</GridLayout>
-
-
+    <TextView
+        android:id="@+id/txtTrailId"
+        tools:text="TargetView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+</FrameLayout>

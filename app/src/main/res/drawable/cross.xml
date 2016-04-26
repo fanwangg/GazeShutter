@@ -4,6 +4,7 @@
     <item>
         <shape android:shape="line">
             <stroke android:width="3dp" android:color="@android:color/white" />
+            <size android:width="48dp" android:height="48dp" />
         </shape>
     </item>
     <item>
@@ -14,10 +15,11 @@
             android:toDegrees="-90">
             <shape android:shape="line">
                 <stroke android:width="3dp" android:color="@android:color/white" />
+                <size android:width="48dp" android:height="48dp" />
             </shape>
         </rotate>
     </item>
 
-    <size android:width="32dp" android:height="32dp" />
+
 </layer-list>
 
