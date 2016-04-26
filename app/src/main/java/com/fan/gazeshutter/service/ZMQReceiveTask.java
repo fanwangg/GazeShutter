@@ -1,12 +1,12 @@
 package com.fan.gazeshutter.service;
 
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
@@ -28,19 +28,32 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
     static final String SUB_PUPIL = "pupil_positions";
     static final String SUB_GAZE_ON_SURFACE = "realtime gaze on unnamed"; //[TODO] tend to be changed
 
-    View mView;
+    View mInfoView, mGazePointView;
+    WindowManager.LayoutParams mInfoTextParams, mGazePointParams;
+
     OverlayService mService;
-    WindowManager.LayoutParams mParams;
+
     public ZMQReceiveTask(OverlayService service){
         mService = service;
-        mView = mService.mLayoutInflater.inflate(R.layout.overlay, null);
-        mParams = new WindowManager.LayoutParams(
+
+        mGazePointView = mService.mLayoutInflater.inflate(R.layout.service_gaze_point, null);
+        mGazePointParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
-        mParams.gravity = Gravity.LEFT | Gravity.TOP;
+        mGazePointParams.gravity = Gravity.LEFT | Gravity.TOP;
+
+        mInfoView = mService.mLayoutInflater.inflate(R.layout.overlay, null);
+        mInfoTextParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
+        mInfoTextParams.gravity = Gravity.RIGHT | Gravity.TOP;
+        mService.mWindowManager.addView(mInfoView, mInfoTextParams);
     }
 
     @Override
@@ -72,18 +85,25 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
     @Override
     protected void onProgressUpdate(Double... xy){
         Log.d(TAG, "onProgressUpdate:"+xy[0]+" "+xy[1]);
+        //info
+        TextView mInfoTextView = (TextView)mInfoView.findViewById(R.id.txtInfo);
+        mInfoTextView.setText("("+xy[0]+","+xy[1]+")");
+
+        //GazePoint
         if(0<=xy[0] && xy[0]<=1 && 0<=xy[1] && xy[1]<=1) {
-            if(!mView.isShown()) {
-                mService.mWindowManager.addView(mView, mParams);
+            if(!mGazePointView.isShown()) {
+                mService.mWindowManager.addView(mGazePointView, mGazePointParams);
             }
             MainApplication mainApplication = MainApplication.getInstance();
-            mParams.x = (int)(xy[0]*mainApplication.mScreenWidth);
-            mParams.y = (int)((1-xy[1])*mainApplication.mScreenHeight);
-            mService.mWindowManager.updateViewLayout(mView, mParams);
+            mGazePointParams.x = (int)(xy[0]*mainApplication.mScreenWidth);
+            mGazePointParams.y = (int)((1-xy[1])*mainApplication.mScreenHeight);
+            mService.mWindowManager.updateViewLayout(mGazePointView, mGazePointParams);
+
+
         }
         else{
-            if(mView.isShown()) {
-                mService.mWindowManager.removeViewImmediate(mView);
+            if(mGazePointView.isShown()) {
+                mService.mWindowManager.removeViewImmediate(mGazePointView);
             }
         }
     }
@@ -98,7 +118,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
     protected void onCancelled() {
         super.onCancelled();
         Log.d(TAG,"onCanceled");
-        mService.mWindowManager.removeView(mView);
+        mService.mWindowManager.removeView(mGazePointView);
     }
 
     protected Double[] parseMessageToRatio(String content){

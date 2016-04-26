@@ -4,10 +4,10 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:padding="5dp">
-    <TextView
-        android:id="@+id/txtInfo"
-        tools:text="(x,y)"
-        android:layout_height="wrap_content"
-        android:layout_width="wrap_content">
-    </TextView>
+    <ImageView
+        android:id="@+id/btn"
+        android:background="@drawable/circle"
+        android:layout_height="77dp"
+        android:layout_width="77dp">
+    </ImageView>
 </FrameLayout>

@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
         //network
         mTxtDeviceIP.setText(NetworkUtils.getLocalIpAddress(this));
+        mTxtServerIP.setText(NetworkUtils.getLocalIpAddress(this));
     }
 
 
