@@ -10,15 +10,18 @@ import android.widget.TextView;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
+import com.fan.gazeshutter.activity.PilotStudyActivity;
+import com.fan.gazeshutter.event.GazeEvent;
 import com.fan.gazeshutter.utils.NetworkUtils;
 
+import org.greenrobot.eventbus.EventBus;
 import org.zeromq.ZMQ;
 /**
  * Created by fan on 3/26/16.
  * ref. https://www.novoda.com/blog/minimal-zeromq-client-server/
  */
 
-public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
+public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
     static final String TAG = "ZMQReceiveTask";
     static final String SERVER_IP = "192.168.0.117";
     static final String SERVER_PORT = NetworkUtils.PORT;
@@ -70,7 +73,9 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
             String address  = socket.recvStr ();
             String contents = socket.recvStr();
 
-            Double[] xy = parseMessageToRatio(contents);
+            Float[] xy = parseMessageToRatio(contents);
+
+            EventBus.getDefault().post(new GazeEvent(xy[0], xy[1]));
             publishProgress(xy);
             Log.d(TAG,address + " : " + contents);
         }
@@ -83,7 +88,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
     }
 
     @Override
-    protected void onProgressUpdate(Double... xy){
+    protected void onProgressUpdate(Float... xy){
         Log.d(TAG, "onProgressUpdate:"+xy[0]+" "+xy[1]);
         //info
         TextView mInfoTextView = (TextView)mInfoView.findViewById(R.id.txtInfo);
@@ -98,7 +103,6 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
             mGazePointParams.x = (int)(xy[0]*mainApplication.mScreenWidth);
             mGazePointParams.y = (int)((1-xy[1])*mainApplication.mScreenHeight);
             mService.mWindowManager.updateViewLayout(mGazePointView, mGazePointParams);
-
 
         }
         else{
@@ -121,15 +125,15 @@ public class ZMQReceiveTask extends AsyncTask<String, Double, String> {
         mService.mWindowManager.removeView(mGazePointView);
     }
 
-    protected Double[] parseMessageToRatio(String content){
-        content = content.substring(1,content.length()-1);
-        Log.d(TAG,content);
+    protected Float[] parseMessageToRatio(String content) {
+        content = content.substring(1, content.length() - 1);
+        Log.d(TAG, content);
 
         String[] xy = content.split(",");//[TODO] split w/ regex
-        Double x = Double.valueOf(xy[0]);
-        Double y = Double.valueOf(xy[1]);
+        Float x = Float.valueOf(xy[0]);
+        Float y = Float.valueOf(xy[1]);
         //Log.d(TAG,"x:"+x+"  y:"+y);
 
-        return new Double[]{x,y};
+        return new Float[]{x, y};
     }
 }

@@ -2,5 +2,5 @@
     <string name="app_name">GazeShutter</string>
     <string name="finish_pilot_study_title">Congratulations!</string>
     <string name="finish_pilot_study_msg">You made it.</string>
-    <string name="finish_pilot_study_confirm">Okay.</string>
+    <string name="finish_pilot_study_confirm">Okay</string>
 </resources>

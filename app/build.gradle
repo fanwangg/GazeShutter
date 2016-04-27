@@ -26,4 +26,5 @@ dependencies {
     compile 'com.google.code.gson:gson:2.+'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'org.zeromq:jeromq:0.3.5'
+    compile 'org.greenrobot:eventbus:3.0.0'
 }

@@ -2,10 +2,12 @@ package com.fan.gazeshutter.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Gravity;
@@ -15,13 +17,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
+import com.fan.gazeshutter.event.GazeEvent;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,7 +41,7 @@ import butterknife.OnClick;
 /**
  * Created by fan on 4/18/16.
  */
-public class PilotStudyActivity extends Activity {
+public class PilotStudyActivity extends Activity{
     static final String TAG = "PilotStudyActivity";
     @Bind(R.id.txtTrailId) TextView mTxtViewTrailId;
     static int mCanvasWidth, mCanvasHeight;
@@ -60,9 +67,28 @@ public class PilotStudyActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pilot_study);
         ButterKnife.bind(this);
-
         init();
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe
+    public void onEvent(GazeEvent ge){
+        MainApplication mMainApplicaiton = MainApplication.getInstance();
+        int x = (int)(ge.x * mMainApplicaiton.mScreenWidth);
+        int y = (int)(ge.x * mMainApplicaiton.mScreenHeight);
+        mCurrentTrail.update(x, y);
+    }
+
 
     void init() {
         mLayout = (GridLayout)findViewById(R.id.layout_pilotstudy);
@@ -105,8 +131,6 @@ public class PilotStudyActivity extends Activity {
         Collections.shuffle(mTrailTargets);
     }
 
-
-
     private ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -136,9 +160,11 @@ public class PilotStudyActivity extends Activity {
             return;
         } else if(mTrailNum == TARGET_ROWS * TARGET_COLS * TRAIL_PER_TARGET){
             showFinishDialog();
-            mCurrentTrail.finishAndOutput();
             return;
         }
+
+        if(mCurrentTrail != null)
+            mCurrentTrail.finishAndOutput();
 
         mPrevTargetView = mCurrentTargetView;
         mCurrentTrail = new Trail(mTrailNum, mTrailTargets.get(mTrailNum));
@@ -168,6 +194,9 @@ public class PilotStudyActivity extends Activity {
         static final String TRAIL_KEY = "trailID";
         static final String TARGET_KEY = "target";
         static final String PATH_KEY = "path";
+
+        final String PACKAGE_NAME = PilotStudyActivity.this.getPackageName();
+        final String FILE_PATH = Environment.getExternalStorageDirectory()+"/Android/data/"+PACKAGE_NAME;
         int row, col;
         int target;
         int trailID;
@@ -206,8 +235,15 @@ public class PilotStudyActivity extends Activity {
                     pathJSON.put(i, point);
                 }
                 json.put(PATH_KEY, pathJSON);
-                String fileName = new String(userID+"/"+trailID+"_"+target+".json");
-                saveJSONObject(json, "path");
+
+
+                File folder = new File(FILE_PATH + File.separator + userID);
+                if (!folder.exists()) {
+                    folder.mkdir();
+                }
+                String fileName = new String(trailID+"_"+target+".json");
+                saveJSONObject(json, FILE_PATH + File.separator + userID + File.separator + fileName);
+                Log.d(TAG,fileName + "saved");
 
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -229,6 +265,9 @@ public class PilotStudyActivity extends Activity {
             }
         }
 
+        void update(int x, int y){
+            this.path.add(new GazePoint(x, y, System.currentTimeMillis()-this.startTime , this.curStage.ordinal()));
+        }
         /*
         void updateCurStage(){
             if(curStage==STAGE.STAGE_0 && isWithinTarget(this))
@@ -254,7 +293,7 @@ public class PilotStudyActivity extends Activity {
             return;
         }
 
-        int getLastTimestamp(){
+        long getLastTimestamp(){
             return path.get(path.size()-1).t;
         }
     }
@@ -280,11 +319,11 @@ public class PilotStudyActivity extends Activity {
         static final String POINT_STAGE_KEY = "s";
 
         //t for elapsed time in milles
-        int t;
         int x, y;
+        long t;
         int stage;
 
-        GazePoint(int x, int y, int t, int s) {
+        GazePoint(int x, int y, long t, int s) {
             this.x = x;
             this.y = y;
             this.t = t;
