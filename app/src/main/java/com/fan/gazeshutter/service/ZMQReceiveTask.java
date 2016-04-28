@@ -31,9 +31,9 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
     static final String SUB_PUPIL = "pupil_positions";
     static final String SUB_GAZE_ON_SURFACE = "realtime gaze on unnamed"; //[TODO] tend to be changed
 
+    int mFPS;
     View mInfoView, mGazePointView;
     WindowManager.LayoutParams mInfoTextParams, mGazePointParams;
-
     OverlayService mService;
 
     public ZMQReceiveTask(OverlayService service){
@@ -68,16 +68,23 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         socket.connect("tcp://"+params[0]+":"+SERVER_PORT);
         socket.subscribe("".getBytes(ZMQ.CHARSET));
 
-        //while (!Thread.currentThread ().isInterrupted ()) {
+        long curTime;
+        long prevTime = System.currentTimeMillis();
+        //main update loop
         while (!isCancelled()) {
             String address  = socket.recvStr ();
             String contents = socket.recvStr();
+            Log.d(TAG,address + " : " + contents);
 
             Float[] xy = parseMessageToRatio(contents);
-
             EventBus.getDefault().post(new GazeEvent(xy[0], xy[1]));
+
+            curTime = System.currentTimeMillis();
+            if(curTime != prevTime)
+                mFPS = (int)(1000/(curTime-prevTime));
+            prevTime = curTime;
+
             publishProgress(xy);
-            Log.d(TAG,address + " : " + contents);
         }
 
         String result = new String(socket.recv(0));
@@ -90,9 +97,12 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
     @Override
     protected void onProgressUpdate(Float... xy){
         Log.d(TAG, "onProgressUpdate:"+xy[0]+" "+xy[1]);
-        //info
+
+        //Info
         TextView mInfoTextView = (TextView)mInfoView.findViewById(R.id.txtInfo);
-        mInfoTextView.setText("("+xy[0]+","+xy[1]+")");
+        String x = String.format("%.2f", xy[0]);
+        String y = String.format("%.2f", xy[1]);
+        mInfoTextView.setText("("+x+", "+y+")\nfps: "+mFPS);
 
         //GazePoint
         if(0<=xy[0] && xy[0]<=1 && 0<=xy[1] && xy[1]<=1) {
