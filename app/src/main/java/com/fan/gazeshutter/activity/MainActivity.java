@@ -23,7 +23,6 @@ import com.fan.gazeshutter.R;
 import com.fan.gazeshutter.service.OverlayService;
 import com.fan.gazeshutter.utils.DispUtils;
 import com.fan.gazeshutter.utils.NetworkUtils;
-import com.fan.gazeshutter.service.ZeroMQSendTask;
 
 import java.util.HashMap;
 import java.util.Iterator;

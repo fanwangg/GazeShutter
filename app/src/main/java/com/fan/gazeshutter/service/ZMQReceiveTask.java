@@ -10,18 +10,21 @@ import android.widget.TextView;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
-import com.fan.gazeshutter.activity.PilotStudyActivity;
 import com.fan.gazeshutter.event.GazeEvent;
+import com.fan.gazeshutter.utils.Const;
 import com.fan.gazeshutter.utils.NetworkUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.zeromq.ZMQ;
+
 /**
  * Created by fan on 3/26/16.
  * ref. https://www.novoda.com/blog/minimal-zeromq-client-server/
  */
 
+
 public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
+    static final int HALO_BTN_NUM = 4;
     static final String TAG = "ZMQReceiveTask";
     static final String SERVER_IP = "192.168.0.117";
     static final String SERVER_PORT = NetworkUtils.PORT;
@@ -33,8 +36,16 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
 
     int mFPS;
     View mInfoView, mGazePointView;
+    View mHaloBtnView[];
     WindowManager.LayoutParams mInfoTextParams, mGazePointParams;
+    WindowManager.LayoutParams mHaloBtnParams[];
     OverlayService mService;
+
+    int mHaloBtnLayout[] = {
+        R.layout.service_halo_btn_l,
+        R.layout.service_halo_btn_u,
+        R.layout.service_halo_btn_r,
+        R.layout.service_halo_btn_d};
 
     public ZMQReceiveTask(OverlayService service){
         mService = service;
@@ -48,7 +59,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
                 PixelFormat.TRANSLUCENT);
         mGazePointParams.gravity = Gravity.LEFT | Gravity.TOP;
 
-        mInfoView = mService.mLayoutInflater.inflate(R.layout.overlay, null);
+        //Text Info
         mInfoTextParams = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -56,7 +67,30 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
         mInfoTextParams.gravity = Gravity.RIGHT | Gravity.TOP;
+        mInfoView = mService.mLayoutInflater.inflate(R.layout.overlay, null);
         mService.mWindowManager.addView(mInfoView, mInfoTextParams);
+
+
+        //Halo Btn
+        mHaloBtnParams = new  WindowManager.LayoutParams[HALO_BTN_NUM];
+        for (Direction dir : Direction.values()) {
+            mHaloBtnParams[dir.ordinal()] = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                    PixelFormat.TRANSLUCENT);
+            mHaloBtnParams[dir.ordinal()].gravity = Gravity.LEFT | Gravity.TOP;
+        }
+
+        mHaloBtnView = new View[HALO_BTN_NUM];
+        for (Direction dir : Direction.values()) {
+            mHaloBtnView[dir.ordinal()] = mService.mLayoutInflater.inflate(mHaloBtnLayout[dir.ordinal()], null);
+            mService.mWindowManager.addView(mHaloBtnView[dir.ordinal()], mHaloBtnParams[dir.ordinal()]);
+            //mHaloBtnView[dir.ordinal()].setVisibility(View.INVISIBLE);
+        }
+
+
     }
 
     @Override
@@ -104,8 +138,8 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         String y = String.format("%.2f", xy[1]);
         mInfoTextView.setText("("+x+", "+y+")\nfps: "+mFPS);
 
-        //GazePoint
         if(0<=xy[0] && xy[0]<=1 && 0<=xy[1] && xy[1]<=1) {
+            //GazePoint
             if(!mGazePointView.isShown()) {
                 mService.mWindowManager.addView(mGazePointView, mGazePointParams);
             }
@@ -114,18 +148,25 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
             mGazePointParams.y = (int)((1-xy[1])*mainApplication.mScreenHeight);
             mService.mWindowManager.updateViewLayout(mGazePointView, mGazePointParams);
 
+            //haloBtn
+            showHaloBtn(mGazePointParams.x, mGazePointParams.y);
         }
-        else{
-            if(mGazePointView.isShown()) {
+        else {
+            if (mGazePointView.isShown()) {
                 mService.mWindowManager.removeViewImmediate(mGazePointView);
             }
+            for (Direction dir : Direction.values()) {
+                mHaloBtnView[dir.ordinal()].setVisibility(View.INVISIBLE);
+            }
+
         }
     }
+
+
 
     @Override
     protected void onPostExecute(String result) {
         Log.d(TAG,"result:"+result);
-
     }
 
     @Override
@@ -145,5 +186,56 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         //Log.d(TAG,"x:"+x+"  y:"+y);
 
         return new Float[]{x, y};
+    }
+
+    protected void showHaloBtn(int x, int y){
+        for (Direction dir : Direction.values()) {
+            mHaloBtnView[dir.ordinal()].setVisibility(View.VISIBLE);
+            mHaloBtnParams[dir.ordinal()].x = dir.getHaloX(x);
+            mHaloBtnParams[dir.ordinal()].y = dir.getHaloY(y);
+            //Log.d(TAG,"updating"+dir);
+            //Log.d(TAG,mHaloBtnParams[dir.ordinal()].x+"  "+mHaloBtnParams[dir.ordinal()].y);
+            mService.mWindowManager.updateViewLayout(mHaloBtnView[dir.ordinal()], mHaloBtnParams[dir.ordinal()]);
+        }
+    }
+}
+
+enum Direction {
+    LEFT(Const.MIN, Const.DONT_CARE),
+    UP(Const.DONT_CARE, Const.MIN),
+    RIGHT(Const.MAX, Const.DONT_CARE),
+    DOWN(Const.DONT_CARE, Const.MAX);
+
+    private int OFFSET = 38;
+    private float xRatio,yRatio;
+    static MainApplication mainApplication = MainApplication.getInstance();
+    static int xMax = mainApplication.mScreenWidth;
+    static int yMax = mainApplication.mScreenHeight;
+
+    Direction(float xRatio, float yRatio) {
+        this.xRatio = xRatio;
+        this.yRatio = yRatio;
+    }
+
+    public int getHaloX(int x){
+        if(xRatio==Const.DONT_CARE)
+            return x;
+        else if(xRatio==Const.MIN)
+            return -OFFSET;
+        else if(xRatio==Const.MAX)
+            return  xMax+OFFSET;
+        else
+            return 0;
+    }
+
+    public int getHaloY(int y){
+        if(yRatio==Const.DONT_CARE)
+            return y;
+        else if(yRatio==Const.MIN)
+            return -OFFSET;
+        else if(yRatio==Const.MAX)
+            return  yMax+OFFSET;
+        else
+            return 0;
     }
 }

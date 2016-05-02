@@ -7,7 +7,7 @@
     <ImageView
         android:id="@+id/btn"
         android:background="@drawable/circle"
-        android:layout_height="77dp"
-        android:layout_width="77dp">
+        android:layout_height="76dp"
+        android:layout_width="76dp">
     </ImageView>
 </FrameLayout>

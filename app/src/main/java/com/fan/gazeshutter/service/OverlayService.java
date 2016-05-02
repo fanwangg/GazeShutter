@@ -33,7 +33,6 @@ public class OverlayService extends Service{
             | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
             | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
             | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED;
-    static final boolean SHOWING_MARKER = false;
     static final String TAG = "OverlayService";
 
     ZMQReceiveTask mZMQRecvTask;
@@ -71,7 +70,6 @@ public class OverlayService extends Service{
             throw new AssertionError("LayoutInflater not found.");
         }
 
-
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -79,22 +77,6 @@ public class OverlayService extends Service{
                 LayoutParamFlags,
                 PixelFormat.RGBA_8888);
         params.gravity = Gravity.LEFT | Gravity.TOP;
-
-
-        /*btn.setOnTouchListener(new View.OnTouchListener() {
-               @Override
-               public boolean onTouch(View v, MotionEvent event) {
-                   return false;
-               }
-           }
-        );*/
-
-
-
-        if(SHOWING_MARKER){
-            ViewGroup mView =  (ViewGroup) mLayoutInflater.inflate(R.layout.overlay, null);
-            mWindowManager.addView(mView, params);
-        }
     }
 
     @Override
