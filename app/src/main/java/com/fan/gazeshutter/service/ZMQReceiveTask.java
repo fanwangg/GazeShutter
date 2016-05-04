@@ -1,5 +1,6 @@
 package com.fan.gazeshutter.service;
 
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
 import com.fan.gazeshutter.event.GazeEvent;
+import com.fan.gazeshutter.utils.Common;
 import com.fan.gazeshutter.utils.Const;
 import com.fan.gazeshutter.utils.NetworkUtils;
 
@@ -67,7 +69,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
         mInfoTextParams.gravity = Gravity.RIGHT | Gravity.TOP;
-        mInfoView = mService.mLayoutInflater.inflate(R.layout.overlay, null);
+        mInfoView = mService.mLayoutInflater.inflate(R.layout.service_info_text, null);
         mService.mWindowManager.addView(mInfoView, mInfoTextParams);
 
 
@@ -87,7 +89,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         for (Direction dir : Direction.values()) {
             mHaloBtnView[dir.ordinal()] = mService.mLayoutInflater.inflate(mHaloBtnLayout[dir.ordinal()], null);
             mService.mWindowManager.addView(mHaloBtnView[dir.ordinal()], mHaloBtnParams[dir.ordinal()]);
-            //mHaloBtnView[dir.ordinal()].setVisibility(View.INVISIBLE);
+            mHaloBtnView[dir.ordinal()].setVisibility(View.INVISIBLE);
         }
 
 
@@ -133,23 +135,24 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         Log.d(TAG, "onProgressUpdate:"+xy[0]+" "+xy[1]);
 
         //Info
+        MainApplication mainApplication = MainApplication.getInstance();
+        int currentX = (int)(xy[0]*mainApplication.mScreenWidth);
+        int currentY = (int)((1-xy[1])*mainApplication.mScreenHeight);
         TextView mInfoTextView = (TextView)mInfoView.findViewById(R.id.txtInfo);
-        String x = String.format("%.2f", xy[0]);
-        String y = String.format("%.2f", xy[1]);
-        mInfoTextView.setText("("+x+", "+y+")\nfps: "+mFPS);
+        mInfoTextView.setText("("+currentX+", "+currentY+")\nfps: "+mFPS);
 
         if(0<=xy[0] && xy[0]<=1 && 0<=xy[1] && xy[1]<=1) {
             //GazePoint
             if(!mGazePointView.isShown()) {
                 mService.mWindowManager.addView(mGazePointView, mGazePointParams);
             }
-            MainApplication mainApplication = MainApplication.getInstance();
-            mGazePointParams.x = (int)(xy[0]*mainApplication.mScreenWidth);
-            mGazePointParams.y = (int)((1-xy[1])*mainApplication.mScreenHeight);
+            mGazePointParams.x = currentX;
+            mGazePointParams.y = currentY;
+            mGazePointParams = moveViewToCenter(mGazePointView, mGazePointParams);
             mService.mWindowManager.updateViewLayout(mGazePointView, mGazePointParams);
 
             //haloBtn
-            showHaloBtn(mGazePointParams.x, mGazePointParams.y);
+            updateHaloBtn(currentX, currentY);
         }
         else {
             if (mGazePointView.isShown()) {
@@ -161,8 +164,6 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
 
         }
     }
-
-
 
     @Override
     protected void onPostExecute(String result) {
@@ -188,15 +189,28 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         return new Float[]{x, y};
     }
 
-    protected void showHaloBtn(int x, int y){
+    protected void updateHaloBtn(int x, int y){
         for (Direction dir : Direction.values()) {
             mHaloBtnView[dir.ordinal()].setVisibility(View.VISIBLE);
             mHaloBtnParams[dir.ordinal()].x = dir.getHaloX(x);
             mHaloBtnParams[dir.ordinal()].y = dir.getHaloY(y);
             //Log.d(TAG,"updating"+dir);
             //Log.d(TAG,mHaloBtnParams[dir.ordinal()].x+"  "+mHaloBtnParams[dir.ordinal()].y);
+            mHaloBtnParams[dir.ordinal()] = moveViewToCenter(mHaloBtnView[dir.ordinal()], mHaloBtnParams[dir.ordinal()]);
             mService.mWindowManager.updateViewLayout(mHaloBtnView[dir.ordinal()], mHaloBtnParams[dir.ordinal()]);
+
+            if(Common.isPointInsideView(x, y, mHaloBtnView[dir.ordinal()]))
+                mHaloBtnView[dir.ordinal()].setBackgroundColor(Color.BLUE);
+            else
+                mHaloBtnView[dir.ordinal()].setBackgroundColor(Color.TRANSPARENT);
         }
+    }
+
+
+    protected WindowManager.LayoutParams moveViewToCenter(View v,  WindowManager.LayoutParams params){
+        params.x = params.x - v.getWidth()/2;
+        params.y = params.y - v.getHeight()/2;
+        return params;
     }
 }
 
@@ -238,4 +252,5 @@ enum Direction {
         else
             return 0;
     }
+
 }
