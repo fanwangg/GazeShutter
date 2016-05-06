@@ -315,7 +315,7 @@ public class PilotStudyActivity extends Activity{
         }
     }
 
-    enum MODE{
+    public enum MODE{
         DYNAMIC_4,
         DYNAMIC_1,
         STATIC_1;

@@ -16,8 +16,15 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
+import com.fan.gazeshutter.activity.PilotStudyActivity;
+import com.fan.gazeshutter.event.GazeEvent;
+import com.fan.gazeshutter.event.ModeEvent;
 import com.fan.gazeshutter.utils.NetworkUtils;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 
@@ -39,10 +46,10 @@ public class OverlayService extends Service{
     WindowManager mWindowManager;
     LayoutInflater mLayoutInflater;
     View mCurrentView;
+    PilotStudyActivity.MODE mMode = PilotStudyActivity.MODE.values()[0];
 
     //private View mHaloButtonLayer = new HaloButtonLayer(this);
     //ArrayList<View> mButtonLayers;
-
 
     //@Nullable
     @Override
@@ -61,7 +68,7 @@ public class OverlayService extends Service{
     @Override
     public void onCreate() {
         super.onCreate();
-        //mButtonLayers = new ArrayList<View>();
+        EventBus.getDefault().register(this);
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mLayoutInflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
@@ -81,11 +88,8 @@ public class OverlayService extends Service{
 
     @Override
     public void onDestroy() {
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
-        //for(View btnLayer:mButtonLayers){
-        //    mWindowManager.removeView(btnLayer);
-        //}
-        //mButtonLayers = new ArrayList<View>();
     }
 
 
@@ -93,5 +97,11 @@ public class OverlayService extends Service{
         mCurrentView.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, x, y, 0));
         mCurrentView.dispatchTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, x, y, 0));
         return;
+    }
+
+
+    @Subscribe
+    public void onEvent(ModeEvent me){
+        mMode = me.mode;
     }
 }

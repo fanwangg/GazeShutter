@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
+import com.fan.gazeshutter.activity.PilotStudyActivity;
+import com.fan.gazeshutter.activity.PilotStudyActivity.MODE;
 import com.fan.gazeshutter.event.GazeEvent;
 import com.fan.gazeshutter.utils.Common;
 import com.fan.gazeshutter.utils.Const;
@@ -18,6 +20,10 @@ import com.fan.gazeshutter.utils.NetworkUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.zeromq.ZMQ;
+
+import static com.fan.gazeshutter.activity.PilotStudyActivity.MODE.DYNAMIC_1;
+import static com.fan.gazeshutter.activity.PilotStudyActivity.MODE.DYNAMIC_4;
+import static com.fan.gazeshutter.activity.PilotStudyActivity.MODE.STATIC_1;
 
 /**
  * Created by fan on 3/26/16.
@@ -50,6 +56,8 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         R.layout.service_halo_btn_r,
         R.layout.service_halo_btn_d};
 
+
+
     public ZMQReceiveTask(OverlayService service){
         mService = service;
 
@@ -76,7 +84,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
 
         //Halo Btn
         mHaloBtnParams = new  WindowManager.LayoutParams[HALO_BTN_NUM];
-        for (Direction dir : Direction.values()) {
+        for (Direction dir : Direction.getValues(mService.mMode)) {
             mHaloBtnParams[dir.ordinal()] = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
@@ -87,7 +95,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         }
 
         mHaloBtnView = new View[HALO_BTN_NUM];
-        for (Direction dir : Direction.values()) {
+        for (Direction dir : Direction.getValues(mService.mMode)) {
             mHaloBtnView[dir.ordinal()] = mService.mLayoutInflater.inflate(mHaloBtnLayout[dir.ordinal()], null);
             mService.mWindowManager.addView(mHaloBtnView[dir.ordinal()], mHaloBtnParams[dir.ordinal()]);
             mHaloBtnView[dir.ordinal()].setVisibility(View.INVISIBLE);
@@ -159,7 +167,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
             if (mGazePointView.isShown()) {
                 mService.mWindowManager.removeViewImmediate(mGazePointView);
             }
-            for (Direction dir : Direction.values()) {
+            for (Direction dir : Direction.getValues((mService.mMode))) {
                 mHaloBtnView[dir.ordinal()].setVisibility(View.INVISIBLE);
             }
 
@@ -191,7 +199,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
     }
 
     protected void updateHaloBtn(int x, int y){
-        for (Direction dir : Direction.values()) {
+        for (Direction dir : Direction.getValues(mService.mMode)) {
             mHaloBtnView[dir.ordinal()].setVisibility(View.VISIBLE);
             mHaloBtnParams[dir.ordinal()].x = dir.getHaloX(x);
             mHaloBtnParams[dir.ordinal()].y = dir.getHaloY(y);
@@ -219,7 +227,8 @@ enum Direction {
     LEFT(Const.MIN, Const.DONT_CARE),
     UP(Const.DONT_CARE, Const.MIN),
     RIGHT(Const.MAX, Const.DONT_CARE),
-    DOWN(Const.DONT_CARE, Const.MAX);
+    DOWN(Const.DONT_CARE, Const.MAX),
+    TOP(Const.HALF, Const.MIN);
 
     private int OFFSET = 38;
     private float xRatio,yRatio;
@@ -227,7 +236,23 @@ enum Direction {
     static int xMax = mainApplication.mScreenWidth;
     static int yMax = mainApplication.mScreenHeight;
 
-    Direction(float xRatio, float yRatio) {
+
+    static Direction[] getValues(MODE mode) {
+        switch (mode) {
+            case DYNAMIC_1:
+                return new Direction[]{LEFT, UP, RIGHT, DOWN};
+
+            case DYNAMIC_4:
+                return new Direction[]{RIGHT};
+
+            case STATIC_1:
+                return new Direction[]{TOP};
+
+            default:
+                return null;
+        }
+    }
+    Direction(int xRatio, int yRatio) {
         this.xRatio = xRatio;
         this.yRatio = yRatio;
     }
@@ -239,6 +264,8 @@ enum Direction {
             return -OFFSET;
         else if(xRatio==Const.MAX)
             return  xMax+OFFSET;
+        else if(xRatio==Const.HALF)
+            return xMax/2;
         else
             return 0;
     }
@@ -250,6 +277,8 @@ enum Direction {
             return -OFFSET;
         else if(yRatio==Const.MAX)
             return  yMax+OFFSET;
+        else if(yRatio==Const.HALF)
+            return yMax/2;
         else
             return 0;
     }
