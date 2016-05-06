@@ -15,7 +15,7 @@ import java.util.Enumeration;
  */
 public class NetworkUtils {
     static public final String TAG = "NetworkUtils";
-    static public final String PORT = "5566";
+    static public String serverPORT = "5566";
     static public String serverIP = "192.168.1.1";
 
     static public String getLocalIpAddress(Context context) {
@@ -23,10 +23,19 @@ public class NetworkUtils {
         String adWifi = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
         return adWifi;
     }
+
     static public void setServerIP(String newIP){
         serverIP = newIP;
     }
     static public String getServerIP(){
         return serverIP;
     }
+
+    static public void setServerPORT(String newPORT){
+        serverPORT = newPORT;
+    }
+    static public String getServerPORT(){
+        return serverPORT;
+    }
+
 }

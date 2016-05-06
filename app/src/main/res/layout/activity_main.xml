@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -19,45 +20,106 @@
         android:id="@+id/txtDeviceIP"
         tools:text="0.0.0.0"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/txt"/>
+        android:layout_height="wrap_content" />
 
-    <Button
-        android:id="@+id/btnServiceToggle"
-        android:text="service toggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/txtDeviceIP"/>
 
-    <Button
-        android:id="@+id/btnZMQRecv"
-        android:text="ZMQ start recv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/btnServiceToggle"/>
-
-    <EditText
-        android:id="@+id/txtServerIP"
-        android:singleLine="true"
-        android:inputType="number"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="192.168.1.1"
-        android:layout_below="@+id/btnZMQRecv"/>
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btnZMQSend"
-        android:text="ZMQ start send"
-        android:layout_width="wrap_content"
+
+        <ToggleButton
+            android:id="@+id/btnServiceToggle"
+            android:textOff="service toggle Off"
+            android:textOn="service toggle On"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/btnZMQSend"
+            android:text="ZMQ start send"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/txtServerIP"/>
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="IP:"/>
+
+        <EditText
+            android:id="@+id/txtServerIP"
+            android:singleLine="true"
+            android:inputType="number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            tools:text="192.168.1.1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PORT:"/>
+
+        <EditText
+            android:id="@+id/txtServerPORT"
+            android:singleLine="true"
+            android:inputType="number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            tools:text="5566" />
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name:"/>
+
+        <EditText
+            android:id="@+id/txtUserName"
+            android:singleLine="true"
+            android:inputType="number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            tools:text="Fan Wang" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mode:"/>
+
+        <Spinner
+            android:id="@+id/spinnerMode"
+            android:singleLine="true"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            tools:text="Fan Wang" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btnPilot"
         android:text="start pilot study"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/btnZMQSend"/>
+        android:layout_height="wrap_content" />
 
 
 
@@ -68,6 +130,6 @@
         android:layout_height="match_parent">
     </com.fan.gazeshutter.utils.CursorLayer>
     -->
-</RelativeLayout>
+</LinearLayout>
 
 

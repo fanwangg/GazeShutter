@@ -2,12 +2,10 @@ package com.fan.gazeshutter.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Gravity;
@@ -15,7 +13,6 @@ import android.view.View;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
@@ -33,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -44,16 +42,19 @@ import butterknife.OnClick;
 public class PilotStudyActivity extends Activity{
     static final String TAG = "PilotStudyActivity";
     @Bind(R.id.txtTrailId) TextView mTxtViewTrailId;
+    @Bind(R.id.txtUserMode) TextView mTxtViewUserMode;
+    @Bind(R.id.txtUserName) TextView mTxtViewUserName;
+
     static int mCanvasWidth, mCanvasHeight;
     final int TARGET_ROWS = 4;
     final int TARGET_COLS = 4;
     final int TRAIL_PER_TARGET = 3;
 
-
     int mTrailNum = 0;
     Trail mCurrentTrail;
     ArrayList<Integer> mTrailTargets = new ArrayList<Integer>();
-
+    String mUserID;
+    int mUserMode;
 
 
     boolean mInit = false;
@@ -67,6 +68,11 @@ public class PilotStudyActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pilot_study);
         ButterKnife.bind(this);
+
+        Bundle bundle =this.getIntent().getExtras();
+        mUserID = bundle.getString(Trail.USER_KEY);
+        mUserMode = bundle.getInt(Trail.USER_MODE);
+
         init();
     }
     @Override
@@ -129,6 +135,10 @@ public class PilotStudyActivity extends Activity{
             }
         }
         Collections.shuffle(mTrailTargets);
+
+        //UI
+        mTxtViewUserName.setText("UserName:"+mUserID);
+        mTxtViewUserMode.setText("UserMode:"+MODE.values()[mUserMode]);
     }
 
     private ServiceConnection conn = new ServiceConnection() {
@@ -167,7 +177,7 @@ public class PilotStudyActivity extends Activity{
             mCurrentTrail.finishAndOutput();
 
         mPrevTargetView = mCurrentTargetView;
-        mCurrentTrail = new Trail(mTrailNum, mTrailTargets.get(mTrailNum));
+        mCurrentTrail = new Trail(mUserID, mUserMode, mTrailNum, mTrailTargets.get(mTrailNum));
         mCurrentTargetView = mTargetViews[mCurrentTrail.getRow()][mCurrentTrail.getCol()];
         showCurrentTargetView();
         mTxtViewTrailId.setText("Trail #"+mTrailNum);
@@ -191,23 +201,29 @@ public class PilotStudyActivity extends Activity{
 
     class Trail{
         static final String USER_KEY = "userID";
+        static final String USER_MODE = "userMode";
         static final String TRAIL_KEY = "trailID";
         static final String TARGET_KEY = "target";
         static final String PATH_KEY = "path";
 
         final String PACKAGE_NAME = PilotStudyActivity.this.getPackageName();
-        final String FILE_PATH = Environment.getExternalStorageDirectory()+"/Android/data/"+PACKAGE_NAME;
+        final String FILE_PATH = "/sdcard/Android/data/"+PACKAGE_NAME;
+        //final String FILE_PATH = Environment.getExternalStorageDirectory()+"/Android/data/"+PACKAGE_NAME;
         int row, col;
         int target;
         int trailID;
-        int userID;
+        String userID;
+        int userMode;
         long startTime;
         int duration;
         STAGE curStage;
         ArrayList<GazePoint> path;
 
-        Trail(int trailID, int target){
+        Trail(String userID, int userMode, int trailID, int target){
             this.startTime = System.currentTimeMillis();
+
+            this.userID = userID;
+            this.userMode = userMode;
 
             this.trailID = trailID;
             this.target = target;
@@ -222,6 +238,7 @@ public class PilotStudyActivity extends Activity{
             try {
                 JSONObject json = new JSONObject();
                 json.put(USER_KEY,  userID);
+                json.put(USER_MODE, userMode);
                 json.put(TRAIL_KEY, trailID);
                 json.put(TARGET_KEY, target);
 
@@ -295,6 +312,19 @@ public class PilotStudyActivity extends Activity{
 
         long getLastTimestamp(){
             return path.get(path.size()-1).t;
+        }
+    }
+
+    enum MODE{
+        DYNAMIC_4,
+        DYNAMIC_1,
+        STATIC_1;
+        public static String[] names() {
+            java.util.LinkedList<String> list = new LinkedList<String>();
+            for (MODE s : MODE.values()) {
+                list.add(s.name());
+            }
+            return list.toArray(new String[list.size()]);
         }
     }
 

@@ -29,7 +29,8 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
     static final int HALO_BTN_NUM = 4;
     static final String TAG = "ZMQReceiveTask";
     static final String SERVER_IP = "192.168.0.117";
-    static final String SERVER_PORT = NetworkUtils.PORT;
+
+    static String SERVER_PORT = NetworkUtils.serverPORT;
 
     static final String SUB_DT    = "dt";
     static final String SUB_GAZE  = "gaze_positions";

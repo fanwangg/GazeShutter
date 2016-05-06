@@ -14,9 +14,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
@@ -30,13 +34,16 @@ import java.util.Iterator;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnItemSelected;
 import butterknife.OnTextChanged;
 
 
 public class MainActivity extends AppCompatActivity {
     @Bind(R.id.txtDeviceIP) TextView mTxtDeviceIP;
     @Bind(R.id.txtServerIP) EditText mTxtServerIP;
-
+    @Bind(R.id.txtServerPORT) EditText mTxtServerPORT;
+    @Bind(R.id.btnServiceToggle) ToggleButton mBtnServiceToggle;
+    @Bind(R.id.spinnerMode) Spinner mSpinnerMode;
 
     public static double globalX, globalY;
     static double GLOBAL_MAX = 10;
@@ -46,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
     UsbManager mUsbManager;
     IntentFilter filterAttached_and_Detached;
     BroadcastReceiver mUsbReceiver;
+
+    int mMode = 0;
+    String mUserName = "";
+
 
     boolean isGazing = false;
     Point gazePoint = null;
@@ -67,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy(){
-        unregisterReceiver(mUsbReceiver);
+//        unregisterReceiver(mUsbReceiver);
         super.onDestroy();//must be the last
     }
 
@@ -84,6 +95,106 @@ public class MainActivity extends AppCompatActivity {
     protected void init(){
         DispUtils.init(this);
         initScreenSize();
+
+        //setupUsbReceiver()
+
+        //network
+        mTxtDeviceIP.setText(NetworkUtils.getLocalIpAddress(this));
+        mTxtServerIP.setText(NetworkUtils.getLocalIpAddress(this));
+        mTxtServerPORT.setText(NetworkUtils.getServerPORT());
+
+        ArrayAdapter<String> modeList = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, PilotStudyActivity.MODE.names());
+        mSpinnerMode.setAdapter(modeList);
+
+    }
+
+    @OnClick(R.id.btnServiceToggle)
+    public void checkPermissionAndToggleService() {
+        if (!Settings.canDrawOverlays(this)) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+            startActivityForResult(intent, REQUEST_CODE);
+        }
+        else {
+            toggleService();
+        }
+    }
+
+    @OnTextChanged(R.id.txtServerIP)
+    public void updateServerIP(CharSequence text){
+        NetworkUtils.setServerIP(text.toString());
+    }
+
+    @OnTextChanged(R.id.txtServerPORT)
+    public void updateServerPORT(CharSequence text){
+        NetworkUtils.setServerPORT(text.toString());
+    }
+
+    @OnClick(R.id.btnZMQSend)
+    public void startZmqSend() {
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, ZMQSendingActivity.class);
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.btnPilot)
+    public void startPilotStudy(){
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, PilotStudyActivity.class);
+
+        Bundle bundle= new Bundle();
+        bundle.putString(PilotStudyActivity.Trail.USER_KEY, mUserName);
+        bundle.putInt(PilotStudyActivity.Trail.USER_MODE, mMode);
+
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
+    @OnTextChanged(R.id.txtUserName)
+    public void updateUserName(CharSequence text){
+        mUserName = text.toString();
+    }
+
+    @OnItemSelected(R.id.spinnerMode)
+    void onItemSelected(int position){
+        mMode = position;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
+        if (requestCode == REQUEST_CODE) {
+            //start service with permission granted
+            if (Settings.canDrawOverlays(this)) {
+                toggleService();
+            }
+        }
+    }
+
+    private void toggleService() {
+        if (mBtnServiceToggle.isChecked()) {
+            Intent i = new Intent(MainActivity.this, OverlayService.class);
+            startService(i);
+            Log.d(TAG, "start service");
+
+        } else {
+            // Stop the service when the Menu button clicks.
+            Intent i = new Intent(MainActivity.this, OverlayService.class);
+            stopService(i);
+            Log.d(TAG,"stop service");
+
+        }
+    }
+
+    private void drawHaloButtons(int x, int y){
+
+        return;
+    }
+
+    public void drawGazePoint(int x, int y){
+
+
+    }
+
+    protected void setupUsbReceiver(){
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         mUsbReceiver = new BroadcastReceiver() {
             @Override
@@ -127,6 +238,8 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
+
+
         filterAttached_and_Detached = new IntentFilter(UsbManager.ACTION_USB_ACCESSORY_DETACHED);
         filterAttached_and_Detached.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filterAttached_and_Detached.addAction(ACTION_USB_PERMISSION);
@@ -139,102 +252,6 @@ public class MainActivity extends AppCompatActivity {
             UsbDevice device = deviceIterator.next();
             Log.d("1","" + device);
         }
-
-        //network
-        mTxtDeviceIP.setText(NetworkUtils.getLocalIpAddress(this));
-        mTxtServerIP.setText(NetworkUtils.getLocalIpAddress(this));
-    }
-
-
-     /*
-     * mouse event
-
-    @Override
-    public boolean onGenericMotion(View v, MotionEvent event) {
-        //if((event.getSource() & InputDevice.SOURCE_MOUSE) == 0)
-        if(event.getToolType(0)!=MotionEvent.TOOL_TYPE_MOUSE
-                && event.getToolType(0)!=MotionEvent.TOOL_TYPE_FINGER)
-            return super.onGenericMotionEvent(event);
-
-        //Log.d(TAG,"GenericMotion x="+event.getX()+" y="+event.getY());
-        int x = (int)event.getX();
-        int y = (int)event.getY();
-        if(event.getButtonState() == MotionEvent.ACTION_DOWN){
-            isGazing = true;
-            gazePoint = new Point(x, y);
-        }
-        else if(event.getButtonState() == MotionEvent.ACTION_MOVE) {
-            gazePoint = new Point(x, y);
-        }
-        else if(event.getButtonState() == MotionEvent.ACTION_UP){
-            isGazing = false;
-        }
-
-        if((event.getEdgeFlags() & MotionEvent.EDGE_LEFT) != 0){
-            Log.d(TAG,"edge left");
-        }
-
-        cursorLayer.invalidate();
-
-        return true;
-    }
-     */
-
-    @OnClick(R.id.btnServiceToggle)
-    public void checkPermissionAndToggleService() {
-        if (!Settings.canDrawOverlays(this)) {
-            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-            startActivityForResult(intent, REQUEST_CODE);
-        }
-        else {
-            toggleService();
-        }
-    }
-
-    @OnTextChanged(R.id.txtServerIP)
-    public void updateServerIP(CharSequence text){
-        NetworkUtils.setServerIP(text.toString());
-    }
-
-    @OnClick(R.id.btnZMQSend)
-    public void startZmqSend() {
-        Intent intent = new Intent();
-        intent.setClass(MainActivity.this, ZMQSendingActivity.class);
-        startActivity(intent);
-    }
-
-    @OnClick(R.id.btnPilot)
-    public void startPilotStudy(){
-        Intent intent = new Intent();
-        intent.setClass(MainActivity.this, PilotStudyActivity.class);
-        startActivity(intent);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode,  Intent data) {
-        if (requestCode == REQUEST_CODE) {
-            //start service with permission granted
-            if (Settings.canDrawOverlays(this)) {
-                toggleService();
-            }
-        }
-    }
-
-    private void toggleService() {
-        Intent intent=new Intent(this, OverlayService.class);
-        if (!stopService(intent)) {
-            startService(intent);
-        }
-    }
-
-    private void drawHaloButtons(int x, int y){
-
-        return;
-    }
-
-    public void drawGazePoint(int x, int y){
-
-
     }
 }
 
