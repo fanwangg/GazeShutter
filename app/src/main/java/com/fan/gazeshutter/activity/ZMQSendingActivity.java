@@ -28,6 +28,7 @@ public class ZMQSendingActivity extends Activity implements View.OnTouchListener
     ZMQ.Context mContext;
     ZMQ.Socket mPublisher;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

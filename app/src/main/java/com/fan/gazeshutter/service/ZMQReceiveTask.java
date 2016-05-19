@@ -14,16 +14,16 @@ import com.fan.gazeshutter.R;
 import com.fan.gazeshutter.activity.PilotStudyActivity;
 import com.fan.gazeshutter.activity.PilotStudyActivity.MODE;
 import com.fan.gazeshutter.event.GazeEvent;
+import com.fan.gazeshutter.event.ModeEvent;
 import com.fan.gazeshutter.utils.Common;
 import com.fan.gazeshutter.utils.Const;
 import com.fan.gazeshutter.utils.NetworkUtils;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 import org.zeromq.ZMQ;
 
-import static com.fan.gazeshutter.activity.PilotStudyActivity.MODE.DYNAMIC_1;
-import static com.fan.gazeshutter.activity.PilotStudyActivity.MODE.DYNAMIC_4;
-import static com.fan.gazeshutter.activity.PilotStudyActivity.MODE.STATIC_1;
+import com.fan.gazeshutter.activity.PilotStudyActivity.MODE;
 
 /**
  * Created by fan on 3/26/16.
@@ -32,11 +32,12 @@ import static com.fan.gazeshutter.activity.PilotStudyActivity.MODE.STATIC_1;
 
 
 public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
-    static final int HALO_BTN_NUM = 4;
+    static final int HALO_BTN_NUM = 5;  //L+U+R+D+CENTER
     static final String TAG = "ZMQReceiveTask";
     static final String SERVER_IP = "192.168.0.117";
 
     static String SERVER_PORT = NetworkUtils.serverPORT;
+    public static MODE BTN_MODE = MODE.DYNAMIC_4;;
 
     static final String SUB_DT    = "dt";
     static final String SUB_GAZE  = "gaze_positions";
@@ -54,7 +55,8 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         R.layout.service_halo_btn_l,
         R.layout.service_halo_btn_u,
         R.layout.service_halo_btn_r,
-        R.layout.service_halo_btn_d};
+        R.layout.service_halo_btn_d,
+        R.layout.service_halo_btn_center};
 
 
 
@@ -84,7 +86,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
 
         //Halo Btn
         mHaloBtnParams = new  WindowManager.LayoutParams[HALO_BTN_NUM];
-        for (Direction dir : Direction.getValues(mService.mMode)) {
+        for (Direction dir : Direction.getValues(BTN_MODE)) {
             mHaloBtnParams[dir.ordinal()] = new WindowManager.LayoutParams(
                     WindowManager.LayoutParams.WRAP_CONTENT,
                     WindowManager.LayoutParams.WRAP_CONTENT,
@@ -95,7 +97,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         }
 
         mHaloBtnView = new View[HALO_BTN_NUM];
-        for (Direction dir : Direction.getValues(mService.mMode)) {
+        for (Direction dir : Direction.getValues(BTN_MODE)) {
             mHaloBtnView[dir.ordinal()] = mService.mLayoutInflater.inflate(mHaloBtnLayout[dir.ordinal()], null);
             mService.mWindowManager.addView(mHaloBtnView[dir.ordinal()], mHaloBtnParams[dir.ordinal()]);
             mHaloBtnView[dir.ordinal()].setVisibility(View.INVISIBLE);
@@ -103,6 +105,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
 
 
     }
+
 
     @Override
     protected String doInBackground(String... params) {
@@ -167,12 +170,13 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
             if (mGazePointView.isShown()) {
                 mService.mWindowManager.removeViewImmediate(mGazePointView);
             }
-            for (Direction dir : Direction.getValues((mService.mMode))) {
+            for (Direction dir : Direction.getValues((BTN_MODE))) {
                 mHaloBtnView[dir.ordinal()].setVisibility(View.INVISIBLE);
             }
 
         }
     }
+
 
     @Override
     protected void onPostExecute(String result) {
@@ -183,7 +187,11 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
     protected void onCancelled() {
         super.onCancelled();
         Log.d(TAG,"onCanceled");
-        mService.mWindowManager.removeView(mGazePointView);
+
+        if(mGazePointView!=null) {
+            mService.mWindowManager.removeView(mGazePointView);
+            mGazePointView = null;
+        }
     }
 
     protected Float[] parseMessageToRatio(String content) {
@@ -199,7 +207,7 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
     }
 
     protected void updateHaloBtn(int x, int y){
-        for (Direction dir : Direction.getValues(mService.mMode)) {
+        for (Direction dir : Direction.getValues(BTN_MODE)) {
             mHaloBtnView[dir.ordinal()].setVisibility(View.VISIBLE);
             mHaloBtnParams[dir.ordinal()].x = dir.getHaloX(x);
             mHaloBtnParams[dir.ordinal()].y = dir.getHaloY(y);
@@ -240,12 +248,16 @@ enum Direction {
     static Direction[] getValues(MODE mode) {
         switch (mode) {
             case DYNAMIC_1:
-                return new Direction[]{LEFT, UP, RIGHT, DOWN};
-
-            case DYNAMIC_4:
+                Log.d("Direction","DYNAMIC_1");
                 return new Direction[]{RIGHT};
 
+            case DYNAMIC_4:
+                Log.d("Direction","DYNAMIC_4");
+                return new Direction[]{LEFT, UP, RIGHT, DOWN};
+
+
             case STATIC_1:
+                Log.d("Direction","STATIC_1");
                 return new Direction[]{TOP};
 
             default:

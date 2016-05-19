@@ -88,6 +88,7 @@ public class OverlayService extends Service{
 
     @Override
     public void onDestroy() {
+        mZMQRecvTask.cancel(true);
         EventBus.getDefault().unregister(this);
         super.onDestroy();
     }

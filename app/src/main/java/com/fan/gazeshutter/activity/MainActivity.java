@@ -24,9 +24,14 @@ import android.widget.ToggleButton;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
+import com.fan.gazeshutter.event.GazeEvent;
+import com.fan.gazeshutter.event.ModeEvent;
 import com.fan.gazeshutter.service.OverlayService;
+import com.fan.gazeshutter.service.ZMQReceiveTask;
 import com.fan.gazeshutter.utils.DispUtils;
 import com.fan.gazeshutter.utils.NetworkUtils;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -157,6 +162,8 @@ public class MainActivity extends AppCompatActivity {
     @OnItemSelected(R.id.spinnerMode)
     void onItemSelected(int position){
         mMode = position;
+        Log.d("spinnerMode","Selected"+position);
+        ZMQReceiveTask.BTN_MODE = PilotStudyActivity.MODE.values()[position];
     }
 
     @Override
