@@ -114,11 +114,24 @@
             tools:text="Fan Wang" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnPilot"
-        android:text="start pilot study"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnPilot"
+            android:text="start pilot study"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btnFileSystem"
+            android:text="view files"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
 
 
