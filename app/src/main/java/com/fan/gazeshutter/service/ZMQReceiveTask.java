@@ -248,16 +248,12 @@ enum Direction {
     static Direction[] getValues(MODE mode) {
         switch (mode) {
             case DYNAMIC_1:
-                Log.d("Direction","DYNAMIC_1");
                 return new Direction[]{RIGHT};
 
             case DYNAMIC_4:
-                Log.d("Direction","DYNAMIC_4");
                 return new Direction[]{LEFT, UP, RIGHT, DOWN};
 
-
             case STATIC_1:
-                Log.d("Direction","STATIC_1");
                 return new Direction[]{TOP};
 
             default:

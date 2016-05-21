@@ -5,6 +5,7 @@ import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
+import com.fan.gazeshutter.utils.Common;
 
 import org.zeromq.ZMQ;
 
@@ -21,7 +23,7 @@ import butterknife.ButterKnife;
 /**
  * Created by fan on 4/24/16.
  */
-public class ZMQSendingActivity extends Activity implements View.OnTouchListener{
+public class ZMQSendingActivity  extends AppCompatActivity implements View.OnTouchListener{
     static final String TAG = "ZMQSendingActivity";
     static final String PORT = "5566";
     ViewGroup mLayout;
@@ -62,6 +64,8 @@ public class ZMQSendingActivity extends Activity implements View.OnTouchListener
 
         mLayout =  (ViewGroup)this.getWindow().getDecorView().getRootView();
         mLayout.setOnTouchListener(this);
+
+        Common.hideNavigationBar(this);
     }
 
     @Override
@@ -79,7 +83,6 @@ public class ZMQSendingActivity extends Activity implements View.OnTouchListener
             MainApplication mainApplication = MainApplication.getInstance();
             final double xRatio = ((double)msg.arg1)/mainApplication.mScreenWidth;
             final double yRatio = 1 - ((double)msg.arg2)/mainApplication.mScreenHeight;
-            Log.d(TAG,"("+xRatio+","+yRatio+")");
             new Thread() {
                 public void run() {
                     mPublisher.send("(" + xRatio + "," + yRatio + ")");

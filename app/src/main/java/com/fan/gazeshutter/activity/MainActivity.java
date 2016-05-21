@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -29,6 +30,7 @@ import com.fan.gazeshutter.event.GazeEvent;
 import com.fan.gazeshutter.event.ModeEvent;
 import com.fan.gazeshutter.service.OverlayService;
 import com.fan.gazeshutter.service.ZMQReceiveTask;
+import com.fan.gazeshutter.utils.Common;
 import com.fan.gazeshutter.utils.DispUtils;
 import com.fan.gazeshutter.utils.NetworkUtils;
 
@@ -118,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
         ArrayAdapter<String> modeList = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, PilotStudyActivity.MODE.names());
         mSpinnerMode.setAdapter(modeList);
 
+        Common.hideNavigationBar(this);
     }
 
     @OnClick(R.id.btnServiceToggle)
@@ -167,6 +170,13 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent,REQUEST_CODE);
     }
 
+    @OnClick(R.id.btnMaker)
+    public void showMaker() {
+        Intent intent = new Intent();
+        intent.setClass(MainActivity.this, CalibrateActivity.class);
+        startActivity(intent);
+    }
+
     @OnTextChanged(R.id.txtUserName)
     public void updateUserName(CharSequence text) {
         mUserName = text.toString();
@@ -188,6 +198,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 
     private void toggleService() {
         if (mBtnServiceToggle.isChecked()) {

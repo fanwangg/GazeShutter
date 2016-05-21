@@ -1,7 +1,11 @@
 package com.fan.gazeshutter.utils;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 
 import com.fan.gazeshutter.activity.PilotStudyActivity;
 
@@ -30,4 +34,13 @@ public class Common {
         }
     }
 
+    public static void hideNavigationBar(Activity activity) {
+        View decorView = activity.getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
 }

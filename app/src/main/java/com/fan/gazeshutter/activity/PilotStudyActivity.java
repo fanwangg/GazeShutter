@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import com.fan.gazeshutter.MainApplication;
 import com.fan.gazeshutter.R;
 import com.fan.gazeshutter.event.GazeEvent;
+import com.fan.gazeshutter.utils.Common;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -39,7 +41,7 @@ import butterknife.OnClick;
 /**
  * Created by fan on 4/18/16.
  */
-public class PilotStudyActivity extends Activity{
+public class PilotStudyActivity extends AppCompatActivity{
     static final String TAG = "PilotStudyActivity";
     @Bind(R.id.txtTrailId) TextView mTxtViewTrailId;
     @Bind(R.id.txtUserMode) TextView mTxtViewUserMode;
@@ -79,6 +81,7 @@ public class PilotStudyActivity extends Activity{
     protected void onResume() {
         super.onResume();
         EventBus.getDefault().register(this);
+        Common.hideNavigationBar(this);
     }
 
     @Override
