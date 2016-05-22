@@ -50,6 +50,8 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
     WindowManager.LayoutParams mInfoTextParams, mGazePointParams;
     WindowManager.LayoutParams mHaloBtnParams[];
     OverlayService mService;
+    ZMQ.Context mContext;
+    ZMQ.Socket mSocket;
 
     int mHaloBtnLayout[] = {
         R.layout.service_halo_btn_l,
@@ -109,19 +111,18 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
 
     @Override
     protected String doInBackground(String... params) {
+        mContext = ZMQ.context(1);
+        mSocket = mContext.socket(ZMQ.SUB);
 
-        ZMQ.Context context = ZMQ.context(1);
-        ZMQ.Socket socket = context.socket(ZMQ.SUB);
-
-        socket.connect("tcp://"+params[0]+":"+SERVER_PORT);
-        socket.subscribe("".getBytes(ZMQ.CHARSET));
+        mSocket.connect("tcp://"+params[0]+":"+SERVER_PORT);
+        mSocket.subscribe("".getBytes(ZMQ.CHARSET));
 
         long curTime;
         long prevTime = System.currentTimeMillis();
         //main update loop
         while (!isCancelled()) {
-            String address  = socket.recvStr ();
-            String contents = socket.recvStr();
+            String address  = mSocket.recvStr ();
+            String contents = mSocket.recvStr();
             Log.d(TAG,address + " : " + contents);
 
             Float[] xy = parseMessageToRatio(contents);
@@ -135,16 +136,16 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
             publishProgress(xy);
         }
 
-        String result = new String(socket.recv(0));
-        socket.close();
-        context.term();
+        String result = new String(mSocket.recv(0));
+        mSocket.close();
+        mContext.term();
 
         return result;
     }
 
     @Override
     protected void onProgressUpdate(Float... xy){
-        Log.d(TAG, "onProgressUpdate:"+xy[0]+" "+xy[1]);
+        //Log.d(TAG, "onProgressUpdate:"+xy[0]+" "+xy[1]);
 
         //Info
         MainApplication mainApplication = MainApplication.getInstance();
@@ -188,9 +189,15 @@ public class ZMQReceiveTask extends AsyncTask<String, Float, String> {
         super.onCancelled();
         Log.d(TAG,"onCanceled");
 
-        if(mGazePointView!=null) {
+        if(mGazePointView!=null && mGazePointView.isShown()) {
             mService.mWindowManager.removeView(mGazePointView);
             mGazePointView = null;
+        }
+
+        for (View v : mHaloBtnView) {
+            if(v!=null && v.isShown()) {
+                mService.mWindowManager.removeView(v);
+            }
         }
     }
 

@@ -211,18 +211,7 @@ public class MainActivity extends AppCompatActivity {
             Intent i = new Intent(MainActivity.this, OverlayService.class);
             stopService(i);
             Log.d(TAG, "stop service");
-
         }
-    }
-
-    private void drawHaloButtons(int x, int y) {
-
-        return;
-    }
-
-    public void drawGazePoint(int x, int y) {
-
-
     }
 
     protected void setupUsbReceiver() {

@@ -94,7 +94,7 @@ public class PilotStudyActivity extends AppCompatActivity{
     public void onEvent(GazeEvent ge){
         MainApplication mMainApplicaiton = MainApplication.getInstance();
         int x = (int)(ge.x * mMainApplicaiton.mScreenWidth);
-        int y = (int)(ge.x * mMainApplicaiton.mScreenHeight);
+        int y = (int)((1-ge.y) * mMainApplicaiton.mScreenHeight);
         mCurrentTrail.update(x, y);
     }
 

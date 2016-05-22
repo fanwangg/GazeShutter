@@ -61,7 +61,6 @@ public class OverlayService extends Service{
     public int onStartCommand(Intent intent, int flags, int startId){
         mZMQRecvTask = new ZMQReceiveTask(this);
         mZMQRecvTask.execute(NetworkUtils.getServerIP());
-        Log.d(TAG,"onStartCommand");
         return START_STICKY;
     }
 
@@ -88,9 +87,15 @@ public class OverlayService extends Service{
 
     @Override
     public void onDestroy() {
-        mZMQRecvTask.cancel(true);
+        Log.d(TAG,"onDestory, cancel asyntask");
         EventBus.getDefault().unregister(this);
+        stopAsyntask();
         super.onDestroy();
+    }
+
+    public void stopAsyntask(){
+        mZMQRecvTask.cancel(true);
+        return;
     }
 
 
